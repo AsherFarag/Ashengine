@@ -44,6 +44,8 @@ void Application::Start()
 			Sleep( PadTime );
 		}
 	}
+
+	OnDestroy();
 }
 
 void Application::Exit()

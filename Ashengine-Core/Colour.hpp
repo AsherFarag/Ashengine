@@ -23,7 +23,7 @@ struct Colour
 		, G( a_Green )
 		, B( a_Blue )
 		, A( a_Alpha )
-	{ }
+	{}
 
 	constexpr Colour( float a_R, float a_G, float a_B, float a_A )
 		: R( 255 * a_R )

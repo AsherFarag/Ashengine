@@ -162,109 +162,7 @@ public:
         int m_Height;
     };
 
-    Window(const char* a_Title, int a_Width, int a_Height, int a_PixelWidth = 4, int a_PixelHeight = 4)
-        : m_ScreenBuffer(a_Width, a_Height)
-        , m_TitleBuffer()
-        , m_WindowRegion()
-        , m_WindowHandle()
-        , m_RawWidth( 0 )
-        , m_RawHeight( 0 )
-        , m_PixelWidth( 0 )
-        , m_PixelHeight( 0 )
-    {
-        PixelColourMap::Init();
-
-        // Retrieve handles for console window.
-        m_ConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-        if (m_ConsoleHandle == INVALID_HANDLE_VALUE)
-        {
-            if (AllocConsole())
-            {
-                m_IsValid = false;
-                return;
-            }
-
-            m_ConsoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-        }
-
-        m_WindowHandle = GetConsoleWindow();
-
-        // Set console font.
-        a_PixelWidth = min(a_PixelWidth, static_cast<short>(8));
-        a_PixelHeight = min(a_PixelHeight, static_cast<short>(8));
-        CONSOLE_FONT_INFOEX FontInfo;
-        FontInfo.cbSize = sizeof(FontInfo);
-        FontInfo.nFont = 0;
-        FontInfo.dwFontSize = { (short)a_PixelWidth, (short)a_PixelHeight };
-        FontInfo.FontFamily = FF_DONTCARE;
-        FontInfo.FontWeight = FW_NORMAL;
-        wcscpy_s(FontInfo.FaceName, L"Terminal");
-        SetCurrentConsoleFontEx(m_ConsoleHandle, false, &FontInfo);
-
-        // Get screen buffer info object.
-        CONSOLE_SCREEN_BUFFER_INFOEX ScreenBufferInfo;
-        ScreenBufferInfo.cbSize = sizeof(ScreenBufferInfo);
-        GetConsoleScreenBufferInfoEx(m_ConsoleHandle, &ScreenBufferInfo);
-
-        for (int i = 0; i < 16; ++i)
-        {
-            COLORREF& ColourRef = ScreenBufferInfo.ColorTable[i];
-            Colour SeedColour = PixelColourMap::SeedColours[i];
-            ColourRef =
-                SeedColour.B << 16 |
-                SeedColour.G << 8 |
-                SeedColour.R;
-        }
-
-        SetConsoleScreenBufferInfoEx(m_ConsoleHandle, &ScreenBufferInfo);
-
-        // Get largest possible window size that can fit on screen.
-        COORD LargestWindow = GetLargestConsoleWindowSize(m_ConsoleHandle);
-
-        // If smaller than requested size, exit.
-        if (LargestWindow.X < a_Width ||
-            LargestWindow.Y < a_Height)
-        {
-            m_IsValid = false;
-            return;
-        }
-
-        // Set screen buffer.
-        COORD WindowSize = { (short)GetWidth(), (short)GetHeight() };
-
-        // Set window region rect.
-        m_WindowRegion.Left = 0;
-        m_WindowRegion.Top = 0;
-        m_WindowRegion.Right = WindowSize.X - 1;
-        m_WindowRegion.Bottom = WindowSize.Y - 1;
-
-        // Set console attributes.
-        SetConsoleScreenBufferSize(m_ConsoleHandle, { (short)a_Width, (short)a_Height });
-        SetConsoleWindowInfo(m_ConsoleHandle, true, &m_WindowRegion);
-        GetConsoleScreenBufferInfoEx(m_ConsoleHandle, &ScreenBufferInfo);
-        SetConsoleScreenBufferSize(m_ConsoleHandle, { (short)a_Width, (short)a_Height });
-
-        // Set cursor attributes.
-        CONSOLE_CURSOR_INFO CursorInfo;
-        GetConsoleCursorInfo(m_ConsoleHandle, &CursorInfo);
-        CursorInfo.bVisible = false;
-        SetConsoleCursorInfo(m_ConsoleHandle, &CursorInfo);
-
-        // Set window attributes.
-        SetWindowLong(m_WindowHandle, GWL_STYLE, WS_CAPTION | DS_MODALFRAME | WS_MINIMIZEBOX | WS_SYSMENU);
-        SetWindowPos(m_WindowHandle, 0, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_SHOWWINDOW);
-        SetTitle(a_Title);
-
-        RECT WindowRect;
-        GetWindowRect(m_WindowHandle, &WindowRect);
-
-        m_RawWidth = WindowRect.right - WindowRect.left;
-        m_RawHeight = WindowRect.bottom - WindowRect.top;
-        m_PixelWidth = m_RawWidth / m_ScreenBuffer.GetWidth();
-        m_PixelHeight = m_RawHeight / m_ScreenBuffer.GetHeight();
-        m_IsValid = true;
-    }
+    Window(const char* a_Title, int a_Width, int a_Height, int a_PixelWidth = 4, int a_PixelHeight = 4);
 
     static void SetMainWindow(Window* a_Window) { s_MainWindow = a_Window; }
 
@@ -272,13 +170,7 @@ public:
 
     bool IsValid() const { return m_IsValid; }
 
-    void SetTitle(const char* a_Title)
-    {
-        size_t Length = strlen(a_Title) + 1;
-        Length = Length > 64 ? 64 : Length;
-        mbstowcs_s(nullptr, m_TitleBuffer, Length, a_Title, Length);
-        SetConsoleTitleW(m_TitleBuffer);
-    }
+    void SetTitle(const char* a_Title);
 
     const char* GetTitle() const { return m_Title.c_str(); }
 
@@ -555,6 +447,10 @@ public:
         }
     }
 
+    void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Colour a_Colour);
+
+    void DrawFillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Colour a_Colour);
+
     void Draw() const
     {
         WriteConsoleOutput(
@@ -577,16 +473,16 @@ public:
 
 private:
 
-    bool                         m_IsValid;
-    ConsoleHandle                m_ConsoleHandle;
-    WindowHandle                 m_WindowHandle;
-    WindowRegion                 m_WindowRegion;
-    int                          m_RawWidth;
-    int                          m_RawHeight;
-    int                          m_PixelWidth;
-    int                          m_PixelHeight;
-    wchar_t                      m_TitleBuffer[64];
-    std::string                  m_Title;
-    ScreenBuffer                 m_ScreenBuffer;
-    static Window*         s_MainWindow;
+    bool             m_IsValid;
+    ConsoleHandle    m_ConsoleHandle;
+    WindowHandle     m_WindowHandle;
+    WindowRegion     m_WindowRegion;
+    int              m_RawWidth;
+    int              m_RawHeight;
+    int              m_PixelWidth;
+    int              m_PixelHeight;
+    wchar_t          m_TitleBuffer[64];
+    std::string      m_Title;
+    ScreenBuffer     m_ScreenBuffer;
+    static Window*   s_MainWindow;
 };

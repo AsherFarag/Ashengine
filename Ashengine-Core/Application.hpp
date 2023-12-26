@@ -14,6 +14,8 @@ protected:
 
 	virtual void OnCreate() = 0;
 	virtual void OnUpdate( float a_DeltaTime ) = 0;
+	virtual void OnDestroy() = 0;
+
 
 private:
 
