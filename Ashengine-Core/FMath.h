@@ -42,12 +42,12 @@ namespace FMath
 			return *this / Length();
 		}
 
-		float Dot(const Vector3& b)
+		void Normalize()
 		{
-			return X * b.X + Y * b.Y + Z * b.Z;
+			*this /= Length();
 		}
 
-		float Prod(const Vector3& b)
+		float DotProduct(const Vector3& b)
 		{
 			return X * b.X + Y * b.Y + Z * b.Z;
 		}
@@ -186,6 +186,43 @@ namespace FMath
 	};
 
 #pragma region Matrix
+
+	inline Matrix4 PointAtMatrix(Vector3& Position, Vector3& Target, Vector3& Up)
+	{
+		// Calculate New Forward Vector
+		Vector3 NewForward = Target - Position;
+		NewForward.Normalize();
+
+		// Calculate New Up Vector
+		Vector3 a = NewForward * Up.DotProduct(NewForward);
+		Vector3 NewUp = Up - a;
+		NewUp.Normalize();
+
+		// Calculate New Right Vector
+		Vector3 NewRight = NewUp.Cross(NewForward);
+
+		// Construct Dimensioning and Translation Matrix	
+		Matrix4 Matrix;
+		Matrix.M[0][0] = NewRight.X;	Matrix.M[0][1] = NewRight.Y;	Matrix.M[0][2] = NewRight.Z;	Matrix.M[0][3] = 0.0f;
+		Matrix.M[1][0] = NewUp.X;		Matrix.M[1][1] = NewUp.Y;		Matrix.M[1][2] = NewUp.Z;		Matrix.M[1][3] = 0.0f;
+		Matrix.M[2][0] = NewForward.X;	Matrix.M[2][1] = NewForward.Y;	Matrix.M[2][2] = NewForward.Z;	Matrix.M[2][3] = 0.0f;
+		Matrix.M[3][0] = Position.X;	Matrix.M[3][1] = Position.Y;	Matrix.M[3][2] = Position.Z;	Matrix.M[3][3] = 1.0f;
+		return Matrix;
+	}
+
+	// Only for Rotation/Translation Matrices
+	inline Matrix4 QuickInverseMatrix(Matrix4& M) 
+	{
+		Matrix4 Matrix;
+		Matrix.M[0][0] = M.M[0][0]; Matrix.M[0][1] = M.M[1][0]; Matrix.M[0][2] = M.M[2][0]; Matrix.M[0][3] = 0.0f;
+		Matrix.M[1][0] = M.M[0][1]; Matrix.M[1][1] = M.M[1][1]; Matrix.M[1][2] = M.M[2][1]; Matrix.M[1][3] = 0.0f;
+		Matrix.M[2][0] = M.M[0][2]; Matrix.M[2][1] = M.M[1][2]; Matrix.M[2][2] = M.M[2][2]; Matrix.M[2][3] = 0.0f;
+		Matrix.M[3][0] = -(M.M[3][0] * Matrix.M[0][0] + M.M[3][1] * Matrix.M[1][0] + M.M[3][2] * Matrix.M[2][0]);
+		Matrix.M[3][1] = -(M.M[3][0] * Matrix.M[0][1] + M.M[3][1] * Matrix.M[1][1] + M.M[3][2] * Matrix.M[2][1]);
+		Matrix.M[3][2] = -(M.M[3][0] * Matrix.M[0][2] + M.M[3][1] * Matrix.M[1][2] + M.M[3][2] * Matrix.M[2][2]);
+		Matrix.M[3][3] = 1.0f;
+		return Matrix;
+	}
 
 	inline Matrix4 MakeRotationXMatrix(float AngleRad)
 	{

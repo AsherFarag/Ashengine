@@ -36,7 +36,11 @@ class Ashengine : public Application
 {
 	// Test
 	Mesh Cube;
-	Vector3 Camera {0, 0, 1};
+
+	Vector3 Camera{0,0,1};
+	Vector3 LookDirection;
+
+	float Yaw = 0;
 
 	Colour GetColour(float Lum);
 
@@ -53,8 +57,8 @@ public:
 	const char* WindowTitle		= "AshEngine";
 	int WindowWidth				= 120;
 	int WindowHeight			= 120;
-	int PixelWidth				= 8;
-	int PixelHeight				= 8;
+	int PixelWidth				= 16;
+	int PixelHeight				= 16;
 
 	// Projection Matrix
 	float Near = 0.1f;

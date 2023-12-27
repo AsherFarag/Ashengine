@@ -1,6 +1,7 @@
 #include "Application.hpp"
 #include "Time.hpp"
 #include "Input.hpp"
+#include <string>
 
 void Application::Start()
 {
@@ -13,6 +14,8 @@ void Application::Start()
 	// Store somewhere the deltatime of each frame for use when updating things.
 	double DeltaTime = TargetDeltaTime;
 
+	SetTargetFPS(60);
+
 	// Run a game loop.
 	while ( !ShouldExit )
 	{
@@ -21,7 +24,7 @@ void Application::Start()
 
 		// Run the update function
 		OnUpdate( DeltaTime );
-		
+
 		// Let's figure out how long it took for this whole loop to run
 		TimePoint EndTime = Time::Now();
 		TimeSpan LoopDuration = EndTime - StartTime;
@@ -55,5 +58,5 @@ void Application::Exit()
 
 void Application::SetTargetFPS( float a_TargetFPS )
 {
-	TargetDeltaTime = 1.0f / a_TargetFPS;
+	TargetDeltaTime = 1000.0f / a_TargetFPS;
 }
