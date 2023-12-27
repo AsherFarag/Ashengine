@@ -12,23 +12,31 @@
 #include <iostream>
 #include <vector>
 
+// File Handling
+#include <fstream>
+#include <strstream>
+#include <algorithm>
+
 using namespace FMath;
 
 struct Triangle
 {
 	Vector3 Points[3];
+	Colour m_Colour;
 };
 
 struct Mesh
 {
 	std::vector<Triangle> Tris;
+
+	bool LoadFromObjectFile(std::string a_FileName);
 };
 
 class Ashengine : public Application
 {
 	// Test
 	Mesh Cube;
-	Vector3 Camera;
+	Vector3 Camera {0, 0, 1};
 
 	Colour GetColour(float Lum);
 
@@ -42,11 +50,11 @@ public:
 
 	// Game Window
 	Window* GameWindow;
-	const char* WindowTitle	 = "AshEngine";
-	const int WindowWidth	 = 120;
-	const int WindowHeight	 = 120;
-	const int PixelWidth	 = 8;
-	const int PixelHeight	 = 8;
+	const char* WindowTitle		= "AshEngine";
+	int WindowWidth				= 120;
+	int WindowHeight			= 120;
+	int PixelWidth				= 8;
+	int PixelHeight				= 8;
 
 	// Projection Matrix
 	float Near = 0.1f;
@@ -55,12 +63,7 @@ public:
 	float AspectRatio = (float)WindowHeight / (float)WindowWidth;
 	float FovRad = 1.0f / tanf(Fov * 0.5f / 180.0f * PI);
 
-	Matrix4 ProjMat = Matrix4{
-		AspectRatio * FovRad, 0, 0, 0,
-		0, FovRad, 0, 0,
-		0, 0, Far / (Far - Near), 1,
-		0, 0, (-Far * Near) / (Far - Near), 0
-	};
+	Matrix4 ProjectionMatrix;
 
 	float Theta = 0.0f;
 

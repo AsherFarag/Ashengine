@@ -15,31 +15,9 @@ void Ashengine::OnCreate()
 	Window* GameWindowPointer = GameWindow;
 	Window::SetMainWindow(GameWindowPointer);
 
-	Cube.Tris = {
-		// SOUTH
-		{ 0.0f, 0.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 0.0f },
-		{ 0.0f, 0.0f, 0.0f,    1.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f },
+	ProjectionMatrix = FMath::MakeProjectionMatrix(Fov, AspectRatio, Near, Far);
 
-		// EAST                                                      
-		{ 1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f },
-		{ 1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f },
-
-		// NORTH                                                     
-		{ 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f },
-		{ 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f },
-
-		// WEST                                                      
-		{ 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f },
-		{ 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f,    0.0f, 0.0f, 0.0f },
-
-		// TOP                                                       
-		{ 0.0f, 1.0f, 0.0f,    0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f },
-		{ 0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f },
-
-		// BOTTOM                                                    
-		{ 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f },
-		{ 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f },
-	};
+	Cube.LoadFromObjectFile("Resources/VideoShip.obj");
 }
 
 void Ashengine::OnUpdate(float a_DeltaTime)
@@ -47,86 +25,76 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	// Clear the background ready for things to be drawn over the top of it.
 	GameWindow->SetBuffer(Colour::BLUE);
 	
-	// Rotate Cube
-	Matrix4 MatRotZ, MatRotX;
-	Theta += 5.0f * a_DeltaTime;
+	// Rotate Mesh
+	Theta += 1.0f * a_DeltaTime;
+	Matrix4 MatRotZ = MakeRotationZMatrix(Theta);
+	Matrix4 MatRotX = MakeRotationXMatrix(Theta * 0.5f);
 
-	// Rotation Z
-	MatRotZ.M[0][0] = cosf(Theta);
-	MatRotZ.M[0][1] = sinf(Theta);
-	MatRotZ.M[1][0] = -sinf(Theta);
-	MatRotZ.M[1][1] = cosf(Theta);
-	MatRotZ.M[2][2] = 1;
-	MatRotZ.M[3][3] = 1;
+	Matrix4 TranslationMatrix = FMath::MakeTranslationMatrix(0.f, 0.f, 8);
 
-	// Rotation X
-	MatRotX.M[0][0] = 1;
-	MatRotX.M[1][1] = cosf(Theta * 0.5f);
-	MatRotX.M[1][2] = sinf(Theta * 0.5f);
-	MatRotX.M[2][1] = -sinf(Theta * 0.5f);
-	MatRotX.M[2][2] = cosf(Theta * 0.5f);
-	MatRotX.M[3][3] = 1;
+	Matrix4 WorldMatrix;
+	WorldMatrix = Matrix4(); // Identity
+	WorldMatrix = MatRotZ * MatRotX; // Rotation
+	WorldMatrix = WorldMatrix * TranslationMatrix; // Translation
 
-	// Draw Cube
+	std::vector<Triangle> TrianglesToRaster;
+
+	// Draw Triangles
 	for (auto Tri : Cube.Tris)
 	{
-		Triangle ProjectedTri, TranslatedTri, ZRotatedTri, ZXRotatedTri;
+		Triangle ProjectedTri, TransformedTri;
 
-		// Rotate in Z-Axis
-		MultiplyMatrixVector(Tri.Points[0], ZRotatedTri.Points[0], MatRotZ);
-		MultiplyMatrixVector(Tri.Points[1], ZRotatedTri.Points[1], MatRotZ);
-		MultiplyMatrixVector(Tri.Points[2], ZRotatedTri.Points[2], MatRotZ);
+		TransformedTri.Points[0] = WorldMatrix * Tri.Points[0];
+		TransformedTri.Points[1] = WorldMatrix * Tri.Points[1];
+		TransformedTri.Points[2] = WorldMatrix * Tri.Points[2];
 
-		// Rotate in X-Axis
-		MultiplyMatrixVector(ZRotatedTri.Points[0], ZXRotatedTri.Points[0], MatRotX);
-		MultiplyMatrixVector(ZRotatedTri.Points[1], ZXRotatedTri.Points[1], MatRotX);
-		MultiplyMatrixVector(ZRotatedTri.Points[2], ZXRotatedTri.Points[2], MatRotX);
-
-		// Offset into the screen
-		TranslatedTri = ZXRotatedTri;
-		TranslatedTri.Points[0].Z = ZXRotatedTri.Points[0].Z + 3.0f;
-		TranslatedTri.Points[1].Z = ZXRotatedTri.Points[1].Z + 3.0f;
-		TranslatedTri.Points[2].Z = ZXRotatedTri.Points[2].Z + 3.0f;
-
+		// Calculate Triangle Normal
 		Vector3 Normal, Line1, Line2;
-
-		Line1.X = TranslatedTri.Points[1].X - TranslatedTri.Points[0].X;
-		Line1.Y = TranslatedTri.Points[1].Y - TranslatedTri.Points[0].Y;
-		Line1.Z = TranslatedTri.Points[1].Z - TranslatedTri.Points[0].Z;
-
-		Line2.X = TranslatedTri.Points[2].X - TranslatedTri.Points[0].X;
-		Line2.Y = TranslatedTri.Points[2].Y - TranslatedTri.Points[0].Y;
-		Line2.Z = TranslatedTri.Points[2].Z - TranslatedTri.Points[0].Z;
-
-		Normal.X = Line1.Y * Line2.Z - Line1.Z * Line2.Y;
-		Normal.Y = Line1.Z * Line2.X - Line1.X * Line2.Z;
-		Normal.Z = Line1.X * Line2.Y - Line1.Y * Line2.X;
+		// Get the Lines either side of Triangle
+		Line1 = TransformedTri.Points[1] - TransformedTri.Points[0];
+		Line2 = TransformedTri.Points[2] - TransformedTri.Points[0];
+		// Take Cross-Product of Lines to get Normal to Triangle Surface
+		Normal = Line1.Cross(Line2);
+		// Normalise
+		Normal = Normal.Normal();
 
 		float Length = sqrtf(Normal.X * Normal.X + Normal.Y * Normal.Y + Normal.Z * Normal.Z);
 		Normal.X /= Length; Normal.Y /= Length; Normal.Z /= Length;
 
-		if (Normal.X * (TranslatedTri.Points[0].X - Camera.X) +
-			Normal.Y * (TranslatedTri.Points[0].Y - Camera.Y) +
-			Normal.Z * (TranslatedTri.Points[0].Z - Camera.Z) < 0.0f)
+		// Drawn Tris
+		if (Normal.Dot(Camera) < 0.0f)
 		{
 			// Illumination
 			Vector3 LightDirection = { 0.0f, 0.0f, -1.0f };
-			float Length = sqrtf(LightDirection.X * LightDirection.X + LightDirection.Y * LightDirection.Y + LightDirection.Z * LightDirection.Z);
-			LightDirection.X /= Length; LightDirection.Y /= Length; LightDirection.Z /= Length;
+			LightDirection = LightDirection.Normal();
 
-			float DotProduct = Normal.X * LightDirection.X + Normal.Y * LightDirection.Y + Normal.Z * LightDirection.Z;
+			float DotProduct = LightDirection.Dot(Normal);
 
-			Colour TriColour(DotProduct, DotProduct, DotProduct, 0.1f);
+			ProjectedTri.m_Colour = Colour(DotProduct, DotProduct, DotProduct, 0.1f);
 
 			// Project triangles from 3D -> 2D
-			MultiplyMatrixVector(TranslatedTri.Points[0], ProjectedTri.Points[0], ProjMat);
-			MultiplyMatrixVector(TranslatedTri.Points[1], ProjectedTri.Points[1], ProjMat);
-			MultiplyMatrixVector(TranslatedTri.Points[2], ProjectedTri.Points[2], ProjMat);
+			ProjectedTri.Points[0] = ProjectionMatrix * TransformedTri.Points[0];
+			ProjectedTri.Points[1] = ProjectionMatrix * TransformedTri.Points[1];
+			ProjectedTri.Points[2] = ProjectionMatrix * TransformedTri.Points[2];
+
+			ProjectedTri.Points[0] /= ProjectedTri.Points[0].W;
+			ProjectedTri.Points[1] /= ProjectedTri.Points[1].W;
+			ProjectedTri.Points[2] /= ProjectedTri.Points[2].W;
+
+
+			// X/Y are inverted so put them back
+			ProjectedTri.Points[0].X *= -1.0f;
+			ProjectedTri.Points[1].X *= -1.0f;
+			ProjectedTri.Points[2].X *= -1.0f;
+			ProjectedTri.Points[0].Y *= -1.0f;
+			ProjectedTri.Points[1].Y *= -1.0f;
+			ProjectedTri.Points[2].Y *= -1.0f;
 
 			// Scale into View
-			ProjectedTri.Points[0].X += 1.0f; ProjectedTri.Points[0].Y += 1.0f;
-			ProjectedTri.Points[1].X += 1.0f; ProjectedTri.Points[1].Y += 1.0f;
-			ProjectedTri.Points[2].X += 1.0f; ProjectedTri.Points[2].Y += 1.0f;
+			Vector3 OffsetView = { 1, 1, 1};
+			ProjectedTri.Points[0] += OffsetView;
+			ProjectedTri.Points[1] += OffsetView;
+			ProjectedTri.Points[2] += OffsetView;
 
 			ProjectedTri.Points[0].X *= 0.5f * (float)WindowWidth;
 			ProjectedTri.Points[0].Y *= 0.5f * (float)WindowHeight;
@@ -135,13 +103,25 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			ProjectedTri.Points[2].X *= 0.5f * (float)WindowWidth;
 			ProjectedTri.Points[2].Y *= 0.5f * (float)WindowHeight;
 
-			// Draw Triangle
-			GameWindow->DrawFillTriangle(
-				ProjectedTri.Points[0].X, ProjectedTri.Points[0].Y,
-				ProjectedTri.Points[1].X, ProjectedTri.Points[1].Y,
-				ProjectedTri.Points[2].X, ProjectedTri.Points[2].Y,
-				TriColour);
+			TrianglesToRaster.push_back(ProjectedTri);
 		}
+	}
+
+	std::sort(TrianglesToRaster.begin(), TrianglesToRaster.end(), [](Triangle& T1, Triangle& T2)
+	{
+		float Z1 = (T1.Points[0].Z + T1.Points[1].Z + T1.Points[2].Z) / 3.0f;
+		float Z2 = (T2.Points[0].Z + T2.Points[1].Z + T2.Points[2].Z) / 3.0f;
+		return Z1 > Z2;
+	});
+
+	for (auto& ProjectedTri : TrianglesToRaster)
+	{
+		// Draw Triangle
+		GameWindow->DrawFillTriangle(
+			ProjectedTri.Points[0].X, ProjectedTri.Points[0].Y,
+			ProjectedTri.Points[1].X, ProjectedTri.Points[1].Y,
+			ProjectedTri.Points[2].X, ProjectedTri.Points[2].Y,
+			ProjectedTri.m_Colour);
 	}
 
 	// Draw to the window.
@@ -151,4 +131,41 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 void Ashengine::OnDestroy()
 {
 	delete GameWindow;
+}
+
+bool Mesh::LoadFromObjectFile(std::string a_FileName)
+{
+	std::ifstream File(a_FileName);
+	if (!File.is_open())
+		return false;
+
+	// Local Cache of Verticies
+	std::vector<Vector3> Verticies;
+
+	while (!File.eof())
+	{
+		char Line[128];
+		File.getline(Line, 128);
+
+		std::strstream Stream;
+		Stream << Line;
+
+		char JunkChar;
+
+		// Vertex Reading
+		if (Line[0] == 'v')
+		{
+			Vector3 Vertex;
+			Stream >> JunkChar >> Vertex.X >> Vertex.Y >> Vertex.Z;
+			Verticies.push_back(Vertex);
+		}
+
+		if (Line[0] == 'f')
+		{
+			int Face[3];
+			Stream >> JunkChar >> Face[0] >> Face[1] >> Face[2];
+			Tris.push_back({ Verticies[Face[0] - 1], Verticies[Face[1] - 1], Verticies[Face[2] - 1] });
+		}
+	}
+	return true;
 }
