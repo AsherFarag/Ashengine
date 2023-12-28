@@ -92,7 +92,7 @@ namespace FMath
 			return *this;
 		}
 
-		Vector3& operator+(const Vector3 rhs)
+		Vector3 operator+(const Vector3 rhs)
 		{
 			Vector3 Result;
 			Result.X = this->X + rhs.X;
@@ -101,7 +101,7 @@ namespace FMath
 			return Result;
 		}
 
-		Vector3& operator-(const Vector3 rhs)
+		Vector3 operator-(const Vector3 rhs)
 		{
 			Vector3 Result;
 			Result.X = this->X - rhs.X;
@@ -110,7 +110,7 @@ namespace FMath
 			return Result;
 		}
 
-		Vector3& operator*(const float rhs)
+		Vector3 operator*(const float rhs)
 		{
 			Vector3 Result;
 			Result.X = this->X * rhs;
@@ -119,7 +119,7 @@ namespace FMath
 			return Result;
 		}
 
-		Vector3& operator/(const float rhs)
+		Vector3 operator/(const float rhs)
 		{
 			Vector3 Result;
 			Result.X = this->X / rhs;
@@ -165,7 +165,7 @@ namespace FMath
 			M[3][0] = M30; M[3][1] = M31; M[3][2] = M32; M[3][3] = M33;
 		}
 
-		Vector3& operator*(const Vector3 rhs)
+		Vector3 operator*(const Vector3 rhs)
 		{
 			Vector3 Result;
 			Result.X = rhs.X * this->M[0][0] + rhs.Y * this->M[1][0] + rhs.Z * this->M[2][0] + rhs.W * this->M[3][0];
@@ -175,7 +175,7 @@ namespace FMath
 			return Result;
 		}
 
-		Matrix4& operator*(const Matrix4 rhs)
+		Matrix4 operator*(const Matrix4 rhs)
 		{
 			Matrix4 Matrix;
 			for (int c = 0; c < 4; c++)
@@ -296,7 +296,7 @@ namespace FMath
 
 	inline Vector3 IntersectPlane(Vector3& a_PlanePosition, Vector3& a_PlaneNormal, Vector3& a_LineStart, Vector3& a_LineEnd)
 	{
-		a_PlanePosition.Normalize();
+		a_PlaneNormal.Normalize();
 		float PlaneD = -(a_PlaneNormal.DotProduct(a_PlanePosition));
 		float AD = a_LineStart.DotProduct(a_PlaneNormal);
 		float BD = a_LineEnd.DotProduct(a_PlaneNormal);

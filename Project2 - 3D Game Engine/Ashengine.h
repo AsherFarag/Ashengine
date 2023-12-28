@@ -71,7 +71,7 @@ public:
 
 	float Theta = 0.0f;
 
-	int ClipAgainstPlane(Vector3& a_PlanePosition, Vector3& a_PlaneNormal, Triangle& InTri, Triangle& OutTri1, Triangle& OutTri2)
+	int ClipAgainstPlane(Vector3 a_PlanePosition, Vector3 a_PlaneNormal, Triangle& InTri, Triangle& OutTri1, Triangle& OutTri2)
 	{
 		// Make sure Normal is normalised
 		a_PlaneNormal.Normalize();

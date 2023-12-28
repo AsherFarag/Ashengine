@@ -1,6 +1,7 @@
 #include "Ashengine.h"
 
 #include <string>
+#include <list>
 
 
 Colour Ashengine::GetColour(float Lum)
@@ -38,9 +39,9 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	Vector3 Forward = LookDirection * (8.0f * a_DeltaTime);
 
 	if (Input::IsKeyDown(KeyCode::W))
-		Camera += Forward;
+		Camera = Camera + Forward;
 	if (Input::IsKeyDown(KeyCode::S))
-		Camera -= Forward;
+		Camera = Camera - Forward;
 	if (Input::IsKeyDown(KeyCode::A))
 		Camera.X += 10.0f * a_DeltaTime;
 	if (Input::IsKeyDown(KeyCode::D))
@@ -57,11 +58,11 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	// Rotate Mesh
 	Theta += 0.0f * a_DeltaTime;
 
-	Matrix4 MatRotX = MakeRotationXMatrix(Theta * 0.0f);
-	Matrix4 MatRotY = MakeRotationYMatrix(Theta * 1.0f);
+	Matrix4 MatRotX = MakeRotationXMatrix(Theta * 1.0f);
+	Matrix4 MatRotY = MakeRotationYMatrix(Theta * 0.5f);
 	Matrix4 MatRotZ = MakeRotationZMatrix(Theta * 0.f);
 
-	Matrix4 TranslationMatrix = FMath::MakeTranslationMatrix(0, -1.f, 20.0f);
+	Matrix4 TranslationMatrix = FMath::MakeTranslationMatrix(0, 10.f, 20.0f);
 
 	Matrix4 WorldMatrix;
 	WorldMatrix = Matrix4(); // Identity
@@ -81,7 +82,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	std::vector<Triangle> TrianglesToRaster;
 
 	// Draw Triangles
-	for (auto Tri : Cube.Tris)
+	for (auto& Tri : Cube.Tris)
 	{
 		Triangle ProjectedTri, TransformedTri, ViewedTri;
 
@@ -99,14 +100,17 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 
 		Normal.Normalize();
 
+		// Get Ray from triangle to camera
+		Vector3 CameraRay = TransformedTri.Points[0] - Camera;
+
 		// Drawn Tris
-		if (Normal.DotProduct(Camera) < 0.0f)
+		if (Normal.DotProduct(CameraRay) < 0.0f)
 		{
 			// Illumination
 			Vector3 LightDirection = { 0.0f, 0.0f, -1.0f };
 			LightDirection.Normalize();
 
-			float DotProduct = LightDirection.DotProduct(Normal);
+			float DotProduct = (CameraRay.Normal() * -1).DotProduct(Normal);
 
 			ProjectedTri.m_Colour = Colour(DotProduct, DotProduct * 0.5f, DotProduct * 0.5f + pow(1.0f - DotProduct, 2.0f) * 1.2f, 0.1f);
 
@@ -118,7 +122,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			// Clip Viewed Triangles against Near Plane
 			int ClippedTris = 0;
 			Triangle Clipped[2];
-			Vector3 PlanePosition = { 0.0f, 0.0f, 2.1f }; Vector3 PlaneNormal = { 0.0f, 0.0f, 1.0f };
+			Vector3 PlanePosition = { 0.0f, 0.0f, 0.1f }; Vector3 PlaneNormal = { 0.0f, 0.0f, 1.0f };
 			ClippedTris = ClipAgainstPlane(PlanePosition, PlaneNormal,ViewedTri, Clipped[0], Clipped[1]);
 
 			for (int n = 0; n < ClippedTris; n++)
@@ -142,7 +146,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 				ProjectedTri.Points[2].Y *= -1.0f;
 
 				// Scale into View
-				Vector3 OffsetView = { 1, 1, 1 };
+				Vector3 OffsetView = { 1, 1, 0 };
 				ProjectedTri.Points[0] += OffsetView;
 				ProjectedTri.Points[1] += OffsetView;
 				ProjectedTri.Points[2] += OffsetView;
@@ -166,14 +170,61 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 		return Z1 > Z2;
 	});
 
-	for (auto& ProjectedTri : TrianglesToRaster)
+	for (auto& TriToRaster : TrianglesToRaster)
 	{
+		// Clip Triangles against Screen Edges
+		Triangle Clipped[2];
+		std::list<Triangle> Triangles;
+
+		// Add Initial Tri
+		Triangles.push_back(TriToRaster);
+		int NewTriangles = 1;
+
+		for (int p = 0; p < 3; p++)
+		{
+			int TrisToAdd = 0;
+			while (NewTriangles > 0)
+			{
+				// Take triangle from front of queue
+				Triangle Test = Triangles.front();
+				Triangles.pop_front();
+				NewTriangles--;
+
+				// Clip it against a plane. We only need to test each 
+				// subsequent plane, against subsequent new triangles
+				// as all triangles after a plane clip are guaranteed
+				// to lie on the inside of the plane. I like how this
+				// comment is almost completely and utterly justified
+				switch (p)
+				{
+				case 0:	
+					TrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
+					break;
+				case 1:	
+					TrisToAdd = ClipAgainstPlane({ 0.0f, (float)WindowHeight - 0, 0.0f }, { 0.0f, -1.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
+					break;
+				case 2:	
+					TrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
+					break;
+				case 3:	
+					TrisToAdd = ClipAgainstPlane({ (float)WindowWidth - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
+					break;
+				}
+
+				for (int w = 0; w < TrisToAdd; w++)
+					Triangles.push_back(Clipped[w]);
+			}
+		}
+
 		// Draw Triangle
-		GameWindow->DrawFillTriangle(
-			ProjectedTri.Points[0].X, ProjectedTri.Points[0].Y,
-			ProjectedTri.Points[1].X, ProjectedTri.Points[1].Y,
-			ProjectedTri.Points[2].X, ProjectedTri.Points[2].Y,
-			ProjectedTri.m_Colour);
+		for (auto& TriToDraw : Triangles)
+		{
+			GameWindow->DrawFillTriangle(
+				TriToDraw.Points[0].X, TriToDraw.Points[0].Y,
+				TriToDraw.Points[1].X, TriToDraw.Points[1].Y,
+				TriToDraw.Points[2].X, TriToDraw.Points[2].Y,
+				TriToDraw.m_Colour);
+		}
 	}
 
 	// Draw to the window.
