@@ -134,7 +134,9 @@ void Window::DrawFillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Co
 	auto drawline = [&](int sx, int ex, int ny)
 	{ 
 		for (int i = sx; i <= ex; i++)
+		{
 			SetColour(i, ny, a_Colour);
+		}
 	};
 
 	int t1x, t2x, y, minx, maxx, t1xp, t2xp;

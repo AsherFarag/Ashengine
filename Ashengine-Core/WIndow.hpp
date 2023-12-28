@@ -453,7 +453,7 @@ public:
 
     void Draw() const
     {
-        WriteConsoleOutput(
+       WriteConsoleOutput(
             m_ConsoleHandle,
             ( CHAR_INFO* )m_ScreenBuffer.GetPixels(),
             { ( short )GetWidth(), ( short )GetHeight() },

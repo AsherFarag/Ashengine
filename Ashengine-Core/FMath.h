@@ -4,7 +4,7 @@
 
 namespace FMath
 {
-	# define PI 3.14159265358979323846
+# define PI 3.14159265358979323846
 
 	struct Vector3
 	{
@@ -57,7 +57,7 @@ namespace FMath
 			return{
 				N[1] * b.N[2] - N[2] * b.N[1],
 				N[2] * b.N[0] - N[0] * b.N[2],
-				N[0] * b.N[1] - N[1] * b.N[0]};
+				N[0] * b.N[1] - N[1] * b.N[0] };
 		}
 
 		Vector3& operator+=(const Vector3 rhs)
@@ -180,7 +180,13 @@ namespace FMath
 			Matrix4 Matrix;
 			for (int c = 0; c < 4; c++)
 				for (int r = 0; r < 4; r++)
-					Matrix.M[r][c] = this->M[r][0] * rhs.M[0][c] + this->M[r][1] * rhs.M[1][c] + this->M[r][2] * rhs.M[2][c] + this->M[r][3] * rhs.M[3][c];
+				{
+					Matrix.M[r][c]
+						= this->M[r][0] * rhs.M[0][c]
+						+ this->M[r][1] * rhs.M[1][c]
+						+ this->M[r][2] * rhs.M[2][c]
+						+ this->M[r][3] * rhs.M[3][c];
+				}
 			return Matrix;
 		}
 	};
@@ -211,7 +217,7 @@ namespace FMath
 	}
 
 	// Only for Rotation/Translation Matrices
-	inline Matrix4 QuickInverseMatrix(Matrix4& M) 
+	inline Matrix4 QuickInverseMatrix(Matrix4& M)
 	{
 		Matrix4 Matrix;
 		Matrix.M[0][0] = M.M[0][0]; Matrix.M[0][1] = M.M[1][0]; Matrix.M[0][2] = M.M[2][0]; Matrix.M[0][3] = 0.0f;
@@ -287,4 +293,17 @@ namespace FMath
 	}
 
 #pragma endregion
+
+	inline Vector3 IntersectPlane(Vector3& a_PlanePosition, Vector3& a_PlaneNormal, Vector3& a_LineStart, Vector3& a_LineEnd)
+	{
+		a_PlanePosition.Normalize();
+		float PlaneD = -(a_PlaneNormal.DotProduct(a_PlanePosition));
+		float AD = a_LineStart.DotProduct(a_PlaneNormal);
+		float BD = a_LineEnd.DotProduct(a_PlaneNormal);
+		float T = (-PlaneD - AD) / (BD - AD);
+		Vector3 LineStartToEnd = a_LineEnd - a_LineStart;
+		Vector3 LineToIntersect = LineStartToEnd * T;
+
+		return a_LineStart + LineToIntersect;
+	}
 };

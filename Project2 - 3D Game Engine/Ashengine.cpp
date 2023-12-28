@@ -46,7 +46,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	if (Input::IsKeyDown(KeyCode::D))
 		Camera.X -= 10.0f * a_DeltaTime;
 
-
+	// Fps Counter
 	float FPS = 1.f / a_DeltaTime;
 	std::string FPSTitle = WindowTitle + std::string(" FPS: ") + std::to_string(FPS);
 	GameWindow->SetTitle(FPSTitle.c_str());
@@ -61,7 +61,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	Matrix4 MatRotY = MakeRotationYMatrix(Theta * 1.0f);
 	Matrix4 MatRotZ = MakeRotationZMatrix(Theta * 0.f);
 
-	Matrix4 TranslationMatrix = FMath::MakeTranslationMatrix(0.f, 0.f, 8);
+	Matrix4 TranslationMatrix = FMath::MakeTranslationMatrix(0, -1.f, 20.0f);
 
 	Matrix4 WorldMatrix;
 	WorldMatrix = Matrix4(); // Identity
@@ -99,9 +99,6 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 
 		Normal.Normalize();
 
-		float Length = sqrtf(Normal.X * Normal.X + Normal.Y * Normal.Y + Normal.Z * Normal.Z);
-		Normal /= Length;
-
 		// Drawn Tris
 		if (Normal.DotProduct(Camera) < 0.0f)
 		{
@@ -118,38 +115,47 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			ViewedTri.Points[1] = ViewMatrix * TransformedTri.Points[1];
 			ViewedTri.Points[2] = ViewMatrix * TransformedTri.Points[2];
 
-			// Project triangles from 3D -> 2D
-			ProjectedTri.Points[0] = ProjectionMatrix * ViewedTri.Points[0];
-			ProjectedTri.Points[1] = ProjectionMatrix * ViewedTri.Points[1];
-			ProjectedTri.Points[2] = ProjectionMatrix * ViewedTri.Points[2];
+			// Clip Viewed Triangles against Near Plane
+			int ClippedTris = 0;
+			Triangle Clipped[2];
+			Vector3 PlanePosition = { 0.0f, 0.0f, 2.1f }; Vector3 PlaneNormal = { 0.0f, 0.0f, 1.0f };
+			ClippedTris = ClipAgainstPlane(PlanePosition, PlaneNormal,ViewedTri, Clipped[0], Clipped[1]);
 
-			ProjectedTri.Points[0] /= ProjectedTri.Points[0].W;
-			ProjectedTri.Points[1] /= ProjectedTri.Points[1].W;
-			ProjectedTri.Points[2] /= ProjectedTri.Points[2].W;
+			for (int n = 0; n < ClippedTris; n++)
+			{
+				// Project triangles from 3D -> 2D
+				ProjectedTri.Points[0] = ProjectionMatrix * Clipped[n].Points[0];
+				ProjectedTri.Points[1] = ProjectionMatrix * Clipped[n].Points[1];
+				ProjectedTri.Points[2] = ProjectionMatrix * Clipped[n].Points[2];
+
+				ProjectedTri.Points[0] /= ProjectedTri.Points[0].W;
+				ProjectedTri.Points[1] /= ProjectedTri.Points[1].W;
+				ProjectedTri.Points[2] /= ProjectedTri.Points[2].W;
 
 
-			// X/Y are inverted so put them back
-			ProjectedTri.Points[0].X *= -1.0f;
-			ProjectedTri.Points[1].X *= -1.0f;
-			ProjectedTri.Points[2].X *= -1.0f;
-			ProjectedTri.Points[0].Y *= -1.0f;
-			ProjectedTri.Points[1].Y *= -1.0f;
-			ProjectedTri.Points[2].Y *= -1.0f;
+				// X/Y are inverted so put them back
+				ProjectedTri.Points[0].X *= -1.0f;
+				ProjectedTri.Points[1].X *= -1.0f;
+				ProjectedTri.Points[2].X *= -1.0f;
+				ProjectedTri.Points[0].Y *= -1.0f;
+				ProjectedTri.Points[1].Y *= -1.0f;
+				ProjectedTri.Points[2].Y *= -1.0f;
 
-			// Scale into View
-			Vector3 OffsetView = { 1, 1, 1};
-			ProjectedTri.Points[0] += OffsetView;
-			ProjectedTri.Points[1] += OffsetView;
-			ProjectedTri.Points[2] += OffsetView;
+				// Scale into View
+				Vector3 OffsetView = { 1, 1, 1 };
+				ProjectedTri.Points[0] += OffsetView;
+				ProjectedTri.Points[1] += OffsetView;
+				ProjectedTri.Points[2] += OffsetView;
 
-			ProjectedTri.Points[0].X *= 0.5f * (float)WindowWidth;
-			ProjectedTri.Points[0].Y *= 0.5f * (float)WindowHeight;
-			ProjectedTri.Points[1].X *= 0.5f * (float)WindowWidth;
-			ProjectedTri.Points[1].Y *= 0.5f * (float)WindowHeight;
-			ProjectedTri.Points[2].X *= 0.5f * (float)WindowWidth;
-			ProjectedTri.Points[2].Y *= 0.5f * (float)WindowHeight;
+				ProjectedTri.Points[0].X *= 0.5f * (float)WindowWidth;
+				ProjectedTri.Points[0].Y *= 0.5f * (float)WindowHeight;
+				ProjectedTri.Points[1].X *= 0.5f * (float)WindowWidth;
+				ProjectedTri.Points[1].Y *= 0.5f * (float)WindowHeight;
+				ProjectedTri.Points[2].X *= 0.5f * (float)WindowWidth;
+				ProjectedTri.Points[2].Y *= 0.5f * (float)WindowHeight;
 
-			TrianglesToRaster.push_back(ProjectedTri);
+				TrianglesToRaster.push_back(ProjectedTri);
+			}
 		}
 	}
 
