@@ -38,14 +38,25 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 
 	Vector3 Forward = LookDirection * (8.0f * a_DeltaTime);
 
+	// Camera
+	Vector3 Up = { 0, 1, 0 };
+	Vector3 Target = { 0, 0, 1 };
+	Matrix4 CameraRotation = FMath::MakeRotationYMatrix(Yaw);
+	LookDirection = CameraRotation * Target;
+	Target = Camera + LookDirection;
+
+	Matrix4 CameraMatrix = PointAtMatrix(Camera, Target, Up);
+
+	Vector3 Right = CameraMatrix * Vector3{ 1, 0, 0 };
+
 	if (Input::IsKeyDown(KeyCode::W))
 		Camera = Camera + Forward;
 	if (Input::IsKeyDown(KeyCode::S))
 		Camera = Camera - Forward;
 	if (Input::IsKeyDown(KeyCode::A))
-		Camera.X += 10.0f * a_DeltaTime;
+		Camera += Right * 5.0f * a_DeltaTime;
 	if (Input::IsKeyDown(KeyCode::D))
-		Camera.X -= 10.0f * a_DeltaTime;
+		Camera -= Right * 5.0f * a_DeltaTime;
 
 	// Fps Counter
 	float FPS = 1.f / a_DeltaTime;
@@ -69,14 +80,6 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	WorldMatrix = MatRotZ * MatRotY; // Rotation
 	WorldMatrix = WorldMatrix * TranslationMatrix; // Translation
 
-	// Camera
-	Vector3 Up = { 0, 1, 0 };
-	Vector3 Target = {0, 0, 1};
-	Matrix4 CameraRotation = FMath::MakeRotationYMatrix(Yaw);
-	LookDirection = CameraRotation * Target;
-	Target = Camera + LookDirection;
-
-	Matrix4 CameraMatrix = PointAtMatrix(Camera, Target, Up);
 	Matrix4 ViewMatrix = QuickInverseMatrix(CameraMatrix);
 
 	std::vector<Triangle> TrianglesToRaster;
@@ -113,6 +116,8 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			float DotProduct = (CameraRay.Normal() * -1).DotProduct(Normal);
 
 			ProjectedTri.m_Colour = Colour(DotProduct, DotProduct * 0.5f, DotProduct * 0.5f + pow(1.0f - DotProduct, 2.0f) * 1.2f, 0.1f);
+
+			
 
 			// Convert World Space -> View Space
 			ViewedTri.Points[0] = ViewMatrix * TransformedTri.Points[0];
@@ -180,7 +185,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 		Triangles.push_back(TriToRaster);
 		int NewTriangles = 1;
 
-		for (int p = 0; p < 3; p++)
+		for (int p = 0; p < 4; p++)
 		{
 			int TrisToAdd = 0;
 			while (NewTriangles > 0)
@@ -201,7 +206,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 					TrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
 					break;
 				case 1:	
-					TrisToAdd = ClipAgainstPlane({ 0.0f, (float)WindowHeight - 0, 0.0f }, { 0.0f, -1.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
+					TrisToAdd = ClipAgainstPlane({ 0.0f, (float)WindowHeight - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
 					break;
 				case 2:	
 					TrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
@@ -214,6 +219,8 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 				for (int w = 0; w < TrisToAdd; w++)
 					Triangles.push_back(Clipped[w]);
 			}
+
+			NewTriangles = Triangles.size();
 		}
 
 		// Draw Triangle
