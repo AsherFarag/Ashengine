@@ -3,6 +3,9 @@
 #include <string>
 #include <list>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 
 Colour Ashengine::GetColour(float Lum)
 {
@@ -20,23 +23,44 @@ void Ashengine::OnCreate()
 
 	ProjectionMatrix = FMath::MakeProjectionMatrix(Fov, AspectRatio, Near, Far);
 
-	Cube.LoadFromObjectFile("Resources/teapot.obj");
+	//Cube.LoadFromObjectFile("Resources/mountains.obj");
+	Cube.Tris = {
+		// SOUTH
+		Triangle { Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 0.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
+		Triangle { Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},}
+	};
+
+	CubeTexture = new Sprite(L"Resources/Sprite-0001.tga");
 }
 
 void Ashengine::OnUpdate(float a_DeltaTime)
 {
 	// Input
+	float CameraSpeed = 1.0f;
+
+	if (Input::IsKeyDown(KeyCode::LeftShift))
+		CameraSpeed = 5.0f;
 
 	if (Input::IsKeyDown(KeyCode::Up))
-		Camera.Y += 10.0f * a_DeltaTime;
+		Camera.Y += CameraSpeed * 10.0f * a_DeltaTime;
 	if (Input::IsKeyDown(KeyCode::Down))
-		Camera.Y -= 10.0f * a_DeltaTime;
+		Camera.Y -= CameraSpeed * 10.0f * a_DeltaTime;
 	if (Input::IsKeyDown(KeyCode::Left))
-		Yaw -= 2.0f * a_DeltaTime;
+		Yaw -= CameraSpeed * 2.0f * a_DeltaTime;
 	if (Input::IsKeyDown(KeyCode::Right))
-		Yaw += 2.0f * a_DeltaTime;
+		Yaw += CameraSpeed * 2.0f * a_DeltaTime;
 
-	Vector3 Forward = LookDirection * (8.0f * a_DeltaTime);
+	Vector3 Forward = LookDirection * (CameraSpeed * 8.0f * a_DeltaTime);
 
 	// Camera
 	Vector3 Up = { 0, 1, 0 };
@@ -54,9 +78,9 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	if (Input::IsKeyDown(KeyCode::S))
 		Camera = Camera - Forward;
 	if (Input::IsKeyDown(KeyCode::A))
-		Camera += Right * 5.0f * a_DeltaTime;
+		Camera += Right * (CameraSpeed * 5.0f * a_DeltaTime);
 	if (Input::IsKeyDown(KeyCode::D))
-		Camera -= Right * 5.0f * a_DeltaTime;
+		Camera -= Right * (CameraSpeed * 5.0f * a_DeltaTime);
 
 	// Fps Counter
 	float FPS = 1.f / a_DeltaTime;
@@ -88,10 +112,14 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	for (auto& Tri : Cube.Tris)
 	{
 		Triangle ProjectedTri, TransformedTri, ViewedTri;
-
+		// Verticies
 		TransformedTri.Points[0] = WorldMatrix * Tri.Points[0];
 		TransformedTri.Points[1] = WorldMatrix * Tri.Points[1];
 		TransformedTri.Points[2] = WorldMatrix * Tri.Points[2];
+		// Texture Co-ordinates
+		TransformedTri.TextureCoord[0] = Tri.TextureCoord[0];
+		TransformedTri.TextureCoord[1] = Tri.TextureCoord[1];
+		TransformedTri.TextureCoord[2] = Tri.TextureCoord[2];
 
 		// Calculate Triangle Normal
 		Vector3 Normal, Line1, Line2;
@@ -110,12 +138,13 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 		if (Normal.DotProduct(CameraRay) < 0.0f)
 		{
 			// Illumination
-			Vector3 LightDirection = { 0.0f, 0.0f, -1.0f };
+			Vector3 LightDirection = { 0.0f, 5.0f, -12.5f };
 			LightDirection.Normalize();
 
-			float DotProduct = (CameraRay.Normal() * -1).DotProduct(Normal);
-
-			ProjectedTri.m_Colour = Colour(DotProduct, DotProduct * 0.5f, DotProduct * 0.5f + pow(1.0f - DotProduct, 2.0f) * 1.2f, 0.1f);
+			float DotProduct = LightDirection.DotProduct(Normal);// (CameraRay.Normal() * -1).DotProduct(Normal);
+			DotProduct = max(DotProduct, 0.0f);
+			ProjectedTri.m_Colour = Colour(DotProduct, DotProduct, DotProduct, 1.0f);
+			//ProjectedTri.m_Colour = Colour(DotProduct, DotProduct * 0.5f, DotProduct * 0.5f + pow(1.0f - DotProduct, 2.0f) * 1.2f, 0.1f);
 
 			
 
@@ -123,6 +152,9 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			ViewedTri.Points[0] = ViewMatrix * TransformedTri.Points[0];
 			ViewedTri.Points[1] = ViewMatrix * TransformedTri.Points[1];
 			ViewedTri.Points[2] = ViewMatrix * TransformedTri.Points[2];
+			ViewedTri.TextureCoord[0] = TransformedTri.TextureCoord[0];
+			ViewedTri.TextureCoord[1] = TransformedTri.TextureCoord[1];
+			ViewedTri.TextureCoord[2] = TransformedTri.TextureCoord[2];
 
 			// Clip Viewed Triangles against Near Plane
 			int ClippedTris = 0;
@@ -136,7 +168,11 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 				ProjectedTri.Points[0] = ProjectionMatrix * Clipped[n].Points[0];
 				ProjectedTri.Points[1] = ProjectionMatrix * Clipped[n].Points[1];
 				ProjectedTri.Points[2] = ProjectionMatrix * Clipped[n].Points[2];
+				ProjectedTri.TextureCoord[0] = Clipped[n].TextureCoord[0];
+				ProjectedTri.TextureCoord[1] = Clipped[n].TextureCoord[1];
+				ProjectedTri.TextureCoord[2] = Clipped[n].TextureCoord[2];
 
+				// Scale into View
 				ProjectedTri.Points[0] /= ProjectedTri.Points[0].W;
 				ProjectedTri.Points[1] /= ProjectedTri.Points[1].W;
 				ProjectedTri.Points[2] /= ProjectedTri.Points[2].W;
@@ -150,7 +186,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 				ProjectedTri.Points[1].Y *= -1.0f;
 				ProjectedTri.Points[2].Y *= -1.0f;
 
-				// Scale into View
+				// Translate into View
 				Vector3 OffsetView = { 1, 1, 0 };
 				ProjectedTri.Points[0] += OffsetView;
 				ProjectedTri.Points[1] += OffsetView;
@@ -226,11 +262,24 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 		// Draw Triangle
 		for (auto& TriToDraw : Triangles)
 		{
-			GameWindow->DrawFillTriangle(
-				TriToDraw.Points[0].X, TriToDraw.Points[0].Y,
-				TriToDraw.Points[1].X, TriToDraw.Points[1].Y,
-				TriToDraw.Points[2].X, TriToDraw.Points[2].Y,
-				TriToDraw.m_Colour);
+			//GameWindow->DrawFillTriangle(
+			//	TriToDraw.Points[0].X, TriToDraw.Points[0].Y,
+			//	TriToDraw.Points[1].X, TriToDraw.Points[1].Y,
+			//	TriToDraw.Points[2].X, TriToDraw.Points[2].Y,
+			//	TriToDraw.m_Colour);
+
+			TexturedTriangle(
+				TriToDraw.Points[0].X, TriToDraw.Points[0].Y, TriToDraw.TextureCoord[0].X, TriToDraw.TextureCoord[0].Y,
+				TriToDraw.Points[1].X, TriToDraw.Points[1].Y, TriToDraw.TextureCoord[1].X, TriToDraw.TextureCoord[1].Y,
+				TriToDraw.Points[2].X, TriToDraw.Points[2].Y, TriToDraw.TextureCoord[2].X, TriToDraw.TextureCoord[2].Y, CubeTexture);
+
+
+
+			//GameWindow->DrawTriangle(
+			//	TriToDraw.Points[0].X, TriToDraw.Points[0].Y,
+			//	TriToDraw.Points[1].X, TriToDraw.Points[1].Y,
+			//	TriToDraw.Points[2].X, TriToDraw.Points[2].Y,
+			//	Colour::WHITE);
 		}
 	}
 

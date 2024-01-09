@@ -6,6 +6,25 @@ namespace FMath
 {
 # define PI 3.14159265358979323846
 
+	struct Vector2
+	{
+		union
+		{
+			struct { float X, Y, W; };
+			struct { float U, V, W; };
+		};
+
+		Vector2()
+		{
+			X = Y = 0;
+			W = 1;
+		}
+		Vector2(float a_X, float a_Y)
+		{
+			X = a_X; Y = a_Y; W = 1;
+		}
+	};
+
 	struct Vector3
 	{
 		union
@@ -24,6 +43,11 @@ namespace FMath
 		Vector3(float a_X, float a_Y, float a_Z)
 		{
 			X = a_X; Y = a_Y; Z = a_Z;
+		}
+
+		Vector3(float a_X, float a_Y, float a_Z, float a_W)
+		{
+			X = a_X; Y = a_Y; Z = a_Z; W = a_W;
 		}
 		/* Uses Square root to give exact length */
 		float Length() const
@@ -294,13 +318,13 @@ namespace FMath
 
 #pragma endregion
 
-	inline Vector3 IntersectPlane(Vector3& a_PlanePosition, Vector3& a_PlaneNormal, Vector3& a_LineStart, Vector3& a_LineEnd)
+	inline Vector3 IntersectPlane(Vector3& a_PlanePosition, Vector3& a_PlaneNormal, Vector3& a_LineStart, Vector3& a_LineEnd, float &T)
 	{
 		a_PlaneNormal.Normalize();
 		float PlaneD = -(a_PlaneNormal.DotProduct(a_PlanePosition));
 		float AD = a_LineStart.DotProduct(a_PlaneNormal);
 		float BD = a_LineEnd.DotProduct(a_PlaneNormal);
-		float T = (-PlaneD - AD) / (BD - AD);
+		T = (-PlaneD - AD) / (BD - AD);
 		Vector3 LineStartToEnd = a_LineEnd - a_LineStart;
 		Vector3 LineToIntersect = LineStartToEnd * T;
 
