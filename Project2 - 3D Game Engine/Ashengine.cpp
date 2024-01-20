@@ -6,6 +6,73 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+bool Sprite::Load(std::wstring sFile)
+{
+	// Clear existing data
+	//delete[] m_Colours;
+
+	if (m_Colours)
+	{
+		stbi_image_free((stbi_uc*)m_Colours);
+		m_Colours = nullptr;
+	}
+
+
+	std::string Path(sFile.begin(), sFile.end());
+	int Channels;
+	m_Colours = (Colour*)stbi_load(Path.c_str(), &m_Width, &m_Height, &Channels, 4);
+
+	if (m_Colours)
+	{
+		m_Size = m_Width * m_Height;
+	}
+	else
+	{
+		m_Size = 0;
+		m_Width = 0;
+		m_Height = 0;
+		m_Colours = nullptr;
+	}
+
+	//m_Width = 0;
+	//m_Height = 0;
+
+	// Open file
+	//std::ifstream file(sFile, std::ios::binary);
+	//if (!file.is_open())
+	//{
+	//	std::wcerr << L"Failed to open file: " << sFile << std::endl;
+	//	return false;
+	//}
+
+	//// Read TGA header
+	//TGAHeader header;
+	//file.read(reinterpret_cast<char*>(&header), sizeof(TGAHeader));
+
+	//// Check for uncompressed, 24-bit color TGA
+	//if (header.imageType != 2 || header.pixelDepth != 24)
+	//{
+	//	std::wcerr << L"Unsupported TGA format. Only uncompressed 24-bit color is supported." << std::endl;
+	//	file.close();
+	//	return false;
+	//}
+
+	//// Set width and height
+	//m_Width = header.width;
+	//m_Height = header.height;
+	//m_Size = m_Width * m_Height;
+
+	//// Create color array
+	//m_Colours = new Colour[m_Size];
+
+	//// Read color data
+	//file.read(reinterpret_cast<char*>(m_Colours), m_Size * sizeof(Colour));
+
+	//// Close file
+	//file.close();
+
+	return m_Colours != nullptr;
+}
 
 Colour Ashengine::GetColour(float Lum)
 {
@@ -23,24 +90,24 @@ void Ashengine::OnCreate()
 
 	ProjectionMatrix = FMath::MakeProjectionMatrix(Fov, AspectRatio, Near, Far);
 
-	//Cube.LoadFromObjectFile("Resources/mountains.obj");
+	//Cube.LoadFromObjectFile("Resources/teapot.obj");
 	Cube.Tris = {
 		// SOUTH
-		Triangle { Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 0.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},},
-		Triangle { Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},		Colour {0.0f, 1.0f, 1.0f, 1.0f},}
+		Triangle ( Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 0.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+		Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f})
 	};
 
-	CubeTexture = new Sprite(L"Resources/Sprite-0001.tga");
+	CubeTexture = new Sprite(L"Resources/ore.jpg");
 }
 
 void Ashengine::OnUpdate(float a_DeltaTime)
@@ -141,10 +208,10 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			Vector3 LightDirection = { 0.0f, 5.0f, -12.5f };
 			LightDirection.Normalize();
 
-			float DotProduct = LightDirection.DotProduct(Normal);// (CameraRay.Normal() * -1).DotProduct(Normal);
+			float DotProduct = /*LightDirection.DotProduct(Normal);*/ (CameraRay.Normal() * -1).DotProduct(Normal);
 			DotProduct = max(DotProduct, 0.0f);
-			ProjectedTri.m_Colour = Colour(DotProduct, DotProduct, DotProduct, 1.0f);
-			//ProjectedTri.m_Colour = Colour(DotProduct, DotProduct * 0.5f, DotProduct * 0.5f + pow(1.0f - DotProduct, 2.0f) * 1.2f, 0.1f);
+			//ProjectedTri.m_Colour = Colour(DotProduct, DotProduct, DotProduct, 1.0f);
+			ProjectedTri.m_Colour = Colour(DotProduct, DotProduct * 0.5f, DotProduct * 0.5f + pow(1.0f - DotProduct, 2.0f) * 1.2f, 0.1f);
 
 			
 

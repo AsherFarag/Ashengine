@@ -20,6 +20,7 @@
 #include <algorithm>
 
 using namespace FMath;
+using namespace std;
 
 struct Triangle
 {
@@ -39,6 +40,17 @@ struct Triangle
 		m_Colour = a_Colour;
 	}
 
+	Triangle(Vector3 P1, Vector3 P2, Vector3 P3, Vector2 T1, Vector2 T2, Vector2 T3, Colour a_Colour)
+	{
+		Points[0] = P1;
+		Points[1] = P2;
+		Points[2] = P3;
+		TextureCoord[0] = T1;
+		TextureCoord[1] = T2;
+		TextureCoord[2] = T3;
+		m_Colour = a_Colour;
+	}
+
 	Vector3 Points[3];
 	Vector2 TextureCoord[3];
 	Colour m_Colour;
@@ -51,24 +63,6 @@ struct Mesh
 	bool LoadFromObjectFile(std::string a_FileName);
 };
 
-struct TGAHeader 
-{
-	typedef unsigned char Channel;
-
-	Channel idLength;
-	Channel colorMapType;
-	Channel imageType;
-	unsigned short colorMapOrigin;
-	unsigned short colorMapLength;
-	Channel colorMapDepth;
-	unsigned short xOrigin;
-	unsigned short yOrigin;
-	unsigned short width;
-	unsigned short height;
-	Channel pixelDepth;
-	Channel imageDescriptor;
-};
-
 struct Sprite
 {
 public:
@@ -79,7 +73,8 @@ public:
 	}
 	Sprite(std::wstring sFile)
 	{
-		if (!LoadTGA(sFile))
+		//if (!LoadTGA(sFile))
+		if (!Load(sFile))
 			Create(8, 8);
 	}
 
@@ -124,7 +119,7 @@ public:
 	Colour SampleColour(float x, float y)
 	{
 		int sx = (int)(x * (float)m_Width);
-		int sy = (int)(y * (float)m_Height - 1.0f);
+		int sy = (int)(y * (float)m_Height);
 		if (sx < 0 || sx >= m_Width || sy < 0 || sy >= m_Height)
 			return Colour::BLACK;
 		else
@@ -147,86 +142,99 @@ public:
 		return true;
 	}
 
-	bool Load(std::wstring sFile)
-	{
-		// Clear existing data
-		delete[] m_Colours;
-		m_Width = 0;
-		m_Height = 0;
+	//bool Load(std::wstring sFile)
+	//{
+	//	// Clear existing data
+	//	delete[] m_Colours;
+	//	m_Width = 0;
+	//	m_Height = 0;
 
-		// Open file
-		FILE* f = nullptr;
-		_wfopen_s(&f, sFile.c_str(), L"rb");
-		if (f == nullptr)
-		{
-			std::wcerr << L"Failed to open file: " << sFile << std::endl;
-			return false;
-		}
+	//	// Open file
+	//	FILE* f = nullptr;
+	//	_wfopen_s(&f, sFile.c_str(), L"rb");
+	//	if (f == nullptr)
+	//	{
+	//		std::wcerr << L"Failed to open file: " << sFile << std::endl;
+	//		return false;
+	//	}
 
-		// Read width and height
-		std::fread(&m_Width, sizeof(int), 1, f);
-		std::fread(&m_Height, sizeof(int), 1, f);
+	//	// Read width and height
+	//	std::fread(&m_Width, sizeof(int), 1, f);
+	//	std::fread(&m_Height, sizeof(int), 1, f);
 
-		// Create color array
-		m_Size = m_Width * m_Height;
-		m_Colours = new Colour[m_Size];
+	//	// Create color array
+	//	m_Size = m_Width * m_Height;
+	//	m_Colours = new Colour[m_Size];
 
-		// Read color data
-		for (int i = 1; i <= m_Size; ++i)
-		{
-			std::fread(m_Colours, sizeof(Colour), i, f);
-		}
+	//	// Read color data
+	//	for (int i = 1; i <= m_Size; ++i)
+	//	{
+	//		std::fread(m_Colours, sizeof(Colour), i, f);
+	//	}
 
 
-		// Clean up
-		std::fclose(f);
+	//	// Clean up
+	//	std::fclose(f);
 
-		return true;
-	}
+	//	return true;
+	//}
 
-	bool LoadTGA(const std::wstring& sFile)
-	{
-		// Clear existing data
-		delete[] m_Colours;
-		m_Width = 0;
-		m_Height = 0;
+	//bool LoadTGA(const std::wstring& sFile)
+	bool Load(std::wstring sFile);
+	//{
+	//	// Clear existing data
+	//	//delete[] m_Colours;
 
-		// Open file
-		std::ifstream file(sFile, std::ios::binary);
-		if (!file.is_open())
-		{
-			std::wcerr << L"Failed to open file: " << sFile << std::endl;
-			return false;
-		}
+	//	if (m_Colours)
+	//	{
+	//		stbi_image_free((stbi_uc*)m_Colours);
+	//		m_Colours = nullptr;
+	//	}
 
-		// Read TGA header
-		TGAHeader header;
-		file.read(reinterpret_cast<char*>(&header), sizeof(TGAHeader));
 
-		// Check for uncompressed, 24-bit color TGA
-		if (header.imageType != 2 || header.pixelDepth != 24)
-		{
-			std::wcerr << L"Unsupported TGA format. Only uncompressed 24-bit color is supported." << std::endl;
-			file.close();
-			return false;
-		}
+	//	std::string Path(sFile.begin(), sFile.end());
+	//	int Channels;
+	//	m_Colours = ( Colour* )stbi_load(Path.c_str(), &m_Width, &m_Height, &Channels, 3);
 
-		// Set width and height
-		m_Width = header.width;
-		m_Height = header.height;
-		m_Size = m_Width * m_Height;
+	//	//m_Width = 0;
+	//	//m_Height = 0;
 
-		// Create color array
-		m_Colours = new Colour[m_Size];
+	//	// Open file
+	//	//std::ifstream file(sFile, std::ios::binary);
+	//	//if (!file.is_open())
+	//	//{
+	//	//	std::wcerr << L"Failed to open file: " << sFile << std::endl;
+	//	//	return false;
+	//	//}
 
-		// Read color data
-		file.read(reinterpret_cast<char*>(m_Colours), m_Size * sizeof(Colour));
+	//	//// Read TGA header
+	//	//TGAHeader header;
+	//	//file.read(reinterpret_cast<char*>(&header), sizeof(TGAHeader));
 
-		// Close file
-		file.close();
+	//	//// Check for uncompressed, 24-bit color TGA
+	//	//if (header.imageType != 2 || header.pixelDepth != 24)
+	//	//{
+	//	//	std::wcerr << L"Unsupported TGA format. Only uncompressed 24-bit color is supported." << std::endl;
+	//	//	file.close();
+	//	//	return false;
+	//	//}
 
-		return true;
-	}
+	//	//// Set width and height
+	//	//m_Width = header.width;
+	//	//m_Height = header.height;
+	//	//m_Size = m_Width * m_Height;
+
+	//	//// Create color array
+	//	//m_Colours = new Colour[m_Size];
+
+	//	//// Read color data
+	//	//file.read(reinterpret_cast<char*>(m_Colours), m_Size * sizeof(Colour));
+
+	//	//// Close file
+	//	//file.close();
+
+	//	return true;
+	//}
 };
 
 class Ashengine : public Application
@@ -235,7 +243,7 @@ class Ashengine : public Application
 	Mesh Cube;
 	Sprite* CubeTexture;
 
-	Vector3 Camera{0,0,1};
+	Vector3 Camera{ 0,0,1 };
 	Vector3 LookDirection;
 
 	float Yaw = 0;
@@ -252,11 +260,11 @@ public:
 
 	// Game Window
 	Window* GameWindow;
-	const char* WindowTitle		= "AshEngine";
-	int WindowWidth				= 120;
-	int WindowHeight			= 120;
-	int PixelWidth				= 16;
-	int PixelHeight				= 16;
+	const char* WindowTitle = "AshEngine";
+	int WindowWidth = 80;
+	int WindowHeight = 80;
+	int PixelWidth = 8;
+	int PixelHeight = 8;
 
 	// Projection Matrix
 	float Near = 0.1f;
@@ -276,10 +284,10 @@ public:
 
 		// Return signed shortest distance from point to plane, plane normal must be normalised
 		auto Distance = [&](Vector3& P)
-		{
-			Vector3 Normal = P.Normal();
-			return (a_PlaneNormal.X * P.X + a_PlaneNormal.Y * P.Y + a_PlaneNormal.Z * P.Z - a_PlaneNormal.DotProduct(a_PlanePosition));
-		};
+			{
+				Vector3 Normal = P.Normal();
+				return (a_PlaneNormal.X * P.X + a_PlaneNormal.Y * P.Y + a_PlaneNormal.Z * P.Z - a_PlaneNormal.DotProduct(a_PlanePosition));
+			};
 
 		// Create two temporary storage arrays to classify points either side of plane
 		// If distance sign is positive, point lies on "inside" of plane
@@ -311,17 +319,17 @@ public:
 			TextureInsidePoints[TextureInsidePointCount++] = &InTri.TextureCoord[1];
 		}
 		else
-		{ 
+		{
 			OutsidePoints[OutsidePointCount++] = &InTri.Points[1];
 			TextureOutsidePoints[TextureOutsidePointCount++] = &InTri.TextureCoord[1];
 		}
-		if (D2 >= 0) 
-		{ 
+		if (D2 >= 0)
+		{
 			InsidePoints[InsidePointCount++] = &InTri.Points[2];
 			TextureInsidePoints[TextureInsidePointCount++] = &InTri.TextureCoord[2];
 		}
 		else
-		{ 
+		{
 			OutsidePoints[OutsidePointCount++] = &InTri.Points[2];
 			TextureOutsidePoints[TextureOutsidePointCount++] = &InTri.TextureCoord[2];
 		}
@@ -419,26 +427,29 @@ public:
 	{
 		if (y2 < y1)
 		{
-			std::swap(y1, y2);
-			std::swap(x1, x2);
-			std::swap(u1, u2);
-			std::swap(v1, v2);
+			swap(y1, y2);
+			swap(x1, x2);
+			swap(u1, u2);
+			swap(v1, v2);
+			// swap(w1, w2);
 		}
 
 		if (y3 < y1)
 		{
-			std::swap(y1, y3);
-			std::swap(x1, x3);
-			std::swap(u1, u3);
-			std::swap(v1, v3);
+			swap(y1, y3);
+			swap(x1, x3);
+			swap(u1, u3);
+			swap(v1, v3);
+			//swap(w1, w3);
 		}
 
 		if (y3 < y2)
 		{
-			std::swap(y2, y3);
-			std::swap(x2, x3);
-			std::swap(u2, u3);
-			std::swap(v2, v3);
+			swap(y2, y3);
+			swap(x2, x3);
+			swap(u2, u3);
+			swap(v2, v3);
+			//swap(w2, w3);
 		}
 
 		int dy1 = y2 - y1;
@@ -453,12 +464,12 @@ public:
 		float du2 = u3 - u1;
 		//float dw2 = w3 - w1;
 
-		float tex_u, tex_v, tex_w;
+		float tex_u, tex_v;// , tex_w;
 
 		float dax_step = 0, dbx_step = 0,
 			du1_step = 0, dv1_step = 0,
 			du2_step = 0, dv2_step = 0,
-			 dw1_step = 0, dw2_step = 0;
+			dw1_step = 0, dw2_step = 0;
 
 		if (dy1) dax_step = dx1 / (float)abs(dy1);
 		if (dy2) dbx_step = dx2 / (float)abs(dy2);
@@ -488,10 +499,10 @@ public:
 
 				if (ax > bx)
 				{
-					std::swap(ax, bx);
-					std::swap(tex_su, tex_eu);
-					std::swap(tex_sv, tex_ev);
-					//std::swap(tex_sw, tex_ew);
+					swap(ax, bx);
+					swap(tex_su, tex_eu);
+					swap(tex_sv, tex_ev);
+					//swap(tex_sw, tex_ew);
 				}
 
 				tex_u = tex_su;
@@ -508,11 +519,12 @@ public:
 					//tex_w = (1.0f - t) * tex_sw + t * tex_ew;
 					//if (tex_w > pDepthBuffer[i * ScreenWidth() + j])
 					//{
-					//	GameWindow->SetColour(j, i, Texture->SampleColour(tex_u / tex_w, tex_v / tex_w));
+					//	Draw(j, i, tex->SampleGlyph(tex_u / tex_w, tex_v / tex_w), tex->SampleColour(tex_u / tex_w, tex_v / tex_w));
 					//	pDepthBuffer[i * ScreenWidth() + j] = tex_w;
 					//}
 
-					GameWindow->SetColour(j, i, Texture->GetColour(tex_u, tex_v));
+					// temp
+					GameWindow->SetPixel(j, i, Texture->SampleColour(tex_u, tex_v));
 
 					t += tstep;
 				}
@@ -551,10 +563,10 @@ public:
 
 				if (ax > bx)
 				{
-					std::swap(ax, bx);
-					std::swap(tex_su, tex_eu);
-					std::swap(tex_sv, tex_ev);
-					//std::swap(tex_sw, tex_ew);
+					swap(ax, bx);
+					swap(tex_su, tex_eu);
+					swap(tex_sv, tex_ev);
+					//swap(tex_sw, tex_ew);
 				}
 
 				tex_u = tex_su;
@@ -575,12 +587,15 @@ public:
 					//	Draw(j, i, tex->SampleGlyph(tex_u / tex_w, tex_v / tex_w), tex->SampleColour(tex_u / tex_w, tex_v / tex_w));
 					//	pDepthBuffer[i * ScreenWidth() + j] = tex_w;
 					//}
-					GameWindow->SetColour(j, i, Texture->GetColour(tex_u, tex_v));
+
+					// temp
+					GameWindow->SetPixel(j, i, Texture->SampleColour(tex_u, tex_v));
 
 					t += tstep;
 				}
 			}
 		}
 	}
+
 };
 
