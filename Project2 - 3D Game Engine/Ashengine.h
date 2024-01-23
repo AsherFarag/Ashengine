@@ -13,6 +13,7 @@
 // Std
 #include <iostream>
 #include <vector>
+#include <queue>
 
 // File Handling
 #include <fstream>
@@ -120,7 +121,15 @@ public:
 	{
 		int sx = (int)(x * (float)m_Width);
 		int sy = (int)(y * (float)m_Height);
-		if (sx < 0 || sx >= m_Width || sy < 0 || sy >= m_Height)
+		//return m_Colours[(sy % m_Height) * m_Width + (sx % m_Width)];
+
+		// Flip texture on both X and Y axis 
+		sx -= m_Width - 1;
+		sx *= -1;
+		sy -= m_Height - 1;
+		sy *= -1;
+
+		if (sx < 0 || sx > m_Width || sy < 0 || sy > m_Height)
 			return Colour::BLACK;
 		else
 			return m_Colours[sy * m_Width + sx];
@@ -243,7 +252,7 @@ class Ashengine : public Application
 	Mesh Cube;
 	Sprite* CubeTexture;
 
-	Vector3 Camera{ 0,0,1 };
+	Vector3 Camera{ 0,10,15 };
 	Vector3 LookDirection;
 
 	float Yaw = 0;
@@ -251,6 +260,7 @@ class Ashengine : public Application
 	Colour GetColour(float Lum);
 
 	TimePoint StartTime;
+
 
 public:
 
@@ -367,11 +377,12 @@ public:
 			OutTri1.Points[1] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[0], *OutsidePoints[0], T);
 			OutTri1.TextureCoord[1].U = T * (TextureOutsidePoints[0]->U - TextureInsidePoints[0]->U) + TextureInsidePoints[0]->U;
 			OutTri1.TextureCoord[1].V = T * (TextureOutsidePoints[0]->V - TextureInsidePoints[0]->V) + TextureInsidePoints[0]->V;
-			//OutTri1.TextureCoord[1].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
+			OutTri1.TextureCoord[1].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
 
 			OutTri1.Points[2] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[0], *OutsidePoints[1], T);
 			OutTri1.TextureCoord[2].U = T * (TextureOutsidePoints[1]->U - TextureInsidePoints[0]->U) + TextureInsidePoints[0]->U;
 			OutTri1.TextureCoord[2].V = T * (TextureOutsidePoints[1]->V - TextureInsidePoints[0]->V) + TextureInsidePoints[0]->V;
+			OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[1]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
 
 			return 1;
 		}
@@ -398,7 +409,7 @@ public:
 			OutTri1.Points[2] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[0], *OutsidePoints[0], T);
 			OutTri1.TextureCoord[2].U = T * (TextureOutsidePoints[0]->U - TextureInsidePoints[0]->U) + TextureInsidePoints[0]->U;
 			OutTri1.TextureCoord[2].V = T * (TextureOutsidePoints[0]->V - TextureInsidePoints[0]->V) + TextureInsidePoints[0]->V;
-			//OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
+			OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
 
 			// The second triangle is composed of one of he inside points, a
 			// new point determined by the intersection of the other side of the 
@@ -412,7 +423,7 @@ public:
 			OutTri2.Points[2] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[1], *OutsidePoints[0], T);
 			OutTri2.TextureCoord[2].U = T * (TextureOutsidePoints[0]->U - TextureInsidePoints[1]->U) + TextureInsidePoints[1]->U;
 			OutTri2.TextureCoord[2].V = T * (TextureOutsidePoints[0]->V - TextureInsidePoints[1]->V) + TextureInsidePoints[1]->V;
-			//OutTri2.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[1]->W) + TextureInsidePoints[1]->W;
+			OutTri2.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[1]->W) + TextureInsidePoints[1]->W;
 
 			return 2; // Return two newly formed triangles which form a quad
 		}
@@ -420,94 +431,96 @@ public:
 	}
 
 	void TexturedTriangle(
-		float x1, float y1, float u1, float v1, /*float w1,*/
-		float x2, float y2, float u2, float v2,	/*float w2,*/
-		float x3, float y3, float u3, float v3,	/*float w3,*/
+		Vector3 p1, Vector2 t1,
+		Vector3 p2, Vector2 t2,
+		Vector3 p3, Vector2 t3,
 		Sprite* Texture)
 	{
-		if (y2 < y1)
+		if (p2.Y < p1.Y)
 		{
-			swap(y1, y2);
-			swap(x1, x2);
-			swap(u1, u2);
-			swap(v1, v2);
-			// swap(w1, w2);
+			swap(p1.Y, p2.Y);
+			swap(p1.X, p2.X);
+			swap(t1.U, t2.U);
+			swap(t1.V, t2.V);
+			swap(t1.W, t2.W);
 		}
 
-		if (y3 < y1)
+		if (p3.Y < p1.Y)
 		{
-			swap(y1, y3);
-			swap(x1, x3);
-			swap(u1, u3);
-			swap(v1, v3);
-			//swap(w1, w3);
+			swap(p1.Y, p3.Y);
+			swap(p1.X, p3.X);
+			swap(t1.U, t3.U);
+			swap(t1.V, t3.V);
+			swap(t1.W, t3.W);
 		}
 
-		if (y3 < y2)
+		if (p3.Y < p2.Y)
 		{
-			swap(y2, y3);
-			swap(x2, x3);
-			swap(u2, u3);
-			swap(v2, v3);
-			//swap(w2, w3);
+			swap(p2.Y, p3.Y);
+			swap(p2.X, p3.X);
+			swap(t2.U, t3.U);
+			swap(t2.V, t3.V);
+			swap(t2.W, t3.W);
 		}
 
-		int dy1 = y2 - y1;
-		int dx1 = x2 - x1;
-		float dv1 = v2 - v1;
-		float du1 = u2 - u1;
-		//float dw1 = w2 - w1;
+		int dy1 = p2.Y - p1.Y;
+		int dx1 = p2.X - p1.X;
+		float dv1 = t2.V - t1.V;
+		float du1 = t2.U - t1.U;
+		float dw1 = t2.W - t1.W;
 
-		int dy2 = y3 - y1;
-		int dx2 = x3 - x1;
-		float dv2 = v3 - v1;
-		float du2 = u3 - u1;
-		//float dw2 = w3 - w1;
+		int dy2 = p3.Y - p1.Y;
+		int dx2 = p3.X - p1.X;
+		float dv2 = t3.V - t1.V;
+		float du2 = t3.U - t1.U;
+		float dw2 = t3.W - t1.W;
 
-		float tex_u, tex_v;// , tex_w;
+		float tex_u, tex_v, tex_w;
 
 		float dax_step = 0, dbx_step = 0,
 			du1_step = 0, dv1_step = 0,
 			du2_step = 0, dv2_step = 0,
 			dw1_step = 0, dw2_step = 0;
 
+	#pragma region Top Half of the Tri
+
 		if (dy1) dax_step = dx1 / (float)abs(dy1);
 		if (dy2) dbx_step = dx2 / (float)abs(dy2);
 
 		if (dy1) du1_step = du1 / (float)abs(dy1);
 		if (dy1) dv1_step = dv1 / (float)abs(dy1);
-		//if (dy1) dw1_step = dw1 / (float)abs(dy1);
+		if (dy1) dw1_step = dw1 / (float)abs(dy1);
 
 		if (dy2) du2_step = du2 / (float)abs(dy2);
 		if (dy2) dv2_step = dv2 / (float)abs(dy2);
-		//if (dy2) dw2_step = dw2 / (float)abs(dy2);
+		if (dy2) dw2_step = dw2 / (float)abs(dy2);
 
 		if (dy1)
 		{
-			for (int i = y1; i <= y2; i++)
+			for (int i = p1.Y; i <= p2.Y; ++i)
 			{
-				int ax = x1 + (float)(i - y1) * dax_step;
-				int bx = x1 + (float)(i - y1) * dbx_step;
+				int ax = p1.X + (float)(i - p1.Y) * dax_step;
+				int bx = p1.X + (float)(i - p1.Y) * dbx_step;
 
-				float tex_su = u1 + (float)(i - y1) * du1_step;
-				float tex_sv = v1 + (float)(i - y1) * dv1_step;
-				//float tex_sw = w1 + (float)(i - y1) * dw1_step;
+				float tex_su = t1.U + (float)(i - p1.Y) * du1_step;
+				float tex_sv = t1.V + (float)(i - p1.Y) * dv1_step;
+				float tex_sw = t1.W + (float)(i - p1.Y) * dw1_step;
 
-				float tex_eu = u1 + (float)(i - y1) * du2_step;
-				float tex_ev = v1 + (float)(i - y1) * dv2_step;
-				//float tex_ew = w1 + (float)(i - y1) * dw2_step;
+				float tex_eu = t1.U + (float)(i - p1.Y) * du2_step;
+				float tex_ev = t1.V + (float)(i - p1.Y) * dv2_step;
+				float tex_ew = t1.W + (float)(i - p1.Y) * dw2_step;
 
 				if (ax > bx)
 				{
 					swap(ax, bx);
 					swap(tex_su, tex_eu);
 					swap(tex_sv, tex_ev);
-					//swap(tex_sw, tex_ew);
+					swap(tex_sw, tex_ew);
 				}
 
 				tex_u = tex_su;
 				tex_v = tex_sv;
-				//tex_w = tex_sw;
+				tex_w = tex_sw;
 
 				float tstep = 1.0f / ((float)(bx - ax));
 				float t = 0.0f;
@@ -516,27 +529,29 @@ public:
 				{
 					tex_u = (1.0f - t) * tex_su + t * tex_eu;
 					tex_v = (1.0f - t) * tex_sv + t * tex_ev;
-					//tex_w = (1.0f - t) * tex_sw + t * tex_ew;
+					tex_w = (1.0f - t) * tex_sw + t * tex_ew;
 					//if (tex_w > pDepthBuffer[i * ScreenWidth() + j])
 					//{
 					//	Draw(j, i, tex->SampleGlyph(tex_u / tex_w, tex_v / tex_w), tex->SampleColour(tex_u / tex_w, tex_v / tex_w));
 					//	pDepthBuffer[i * ScreenWidth() + j] = tex_w;
 					//}
 
-					// temp
-					GameWindow->SetPixel(j, i, Texture->SampleColour(tex_u, tex_v));
-
+					GameWindow->SetPixel(j, i, Texture->SampleColour((double)tex_u / tex_w, (double)tex_v / tex_w));
 					t += tstep;
 				}
 
 			}
 		}
 
-		dy1 = y3 - y2;
-		dx1 = x3 - x2;
-		dv1 = v3 - v2;
-		du1 = u3 - u2;
-		//dw1 = w3 - w2;
+	#pragma endregion
+
+	#pragma region Bottom Half of the Tri
+
+		dy1 = p3.Y - p2.Y;
+		dx1 = p3.X - p2.X;
+		dv1 = t3.V - t2.V;
+		du1 = t3.U - t2.U;
+		dw1 = t3.W - t2.W;
 
 		if (dy1) dax_step = dx1 / (float)abs(dy1);
 		if (dy2) dbx_step = dx2 / (float)abs(dy2);
@@ -544,34 +559,34 @@ public:
 		du1_step = 0, dv1_step = 0;
 		if (dy1) du1_step = du1 / (float)abs(dy1);
 		if (dy1) dv1_step = dv1 / (float)abs(dy1);
-		//if (dy1) dw1_step = dw1 / (float)abs(dy1);
+		if (dy1) dw1_step = dw1 / (float)abs(dy1);
 
 		if (dy1)
 		{
-			for (int i = y2; i <= y3; i++)
+			for (int i = p2.Y; i <= p3.Y; i++)
 			{
-				int ax = x2 + (float)(i - y2) * dax_step;
-				int bx = x1 + (float)(i - y1) * dbx_step;
+				int ax = p2.X + (float)(i - p2.Y) * dax_step;
+				int bx = p1.X + (float)(i - p1.Y) * dbx_step;
 
-				float tex_su = u2 + (float)(i - y2) * du1_step;
-				float tex_sv = v2 + (float)(i - y2) * dv1_step;
-				//float tex_sw = w2 + (float)(i - y2) * dw1_step;
+				float tex_su = t2.U + (float)(i - p2.Y) * du1_step;
+				float tex_sv = t2.V + (float)(i - p2.Y) * dv1_step;
+				float tex_sw = t2.W + (float)(i - p2.Y) * dw1_step;
 
-				float tex_eu = u1 + (float)(i - y1) * du2_step;
-				float tex_ev = v1 + (float)(i - y1) * dv2_step;
-				//float tex_ew = w1 + (float)(i - y1) * dw2_step;
+				float tex_eu = t1.U + (float)(i - p1.Y) * du2_step;
+				float tex_ev = t1.V + (float)(i - p1.Y) * dv2_step;
+				float tex_ew = t1.W + (float)(i - p1.Y) * dw2_step;
 
 				if (ax > bx)
 				{
 					swap(ax, bx);
 					swap(tex_su, tex_eu);
 					swap(tex_sv, tex_ev);
-					//swap(tex_sw, tex_ew);
+					swap(tex_sw, tex_ew);
 				}
 
 				tex_u = tex_su;
 				tex_v = tex_sv;
-				//tex_w = tex_sw;
+				tex_w = tex_sw;
 
 				float tstep = 1.0f / ((float)(bx - ax));
 				float t = 0.0f;
@@ -580,22 +595,20 @@ public:
 				{
 					tex_u = (1.0f - t) * tex_su + t * tex_eu;
 					tex_v = (1.0f - t) * tex_sv + t * tex_ev;
-					//tex_w = (1.0f - t) * tex_sw + t * tex_ew;
+					tex_w = (1.0f - t) * tex_sw + t * tex_ew;
 
 					//if (tex_w > pDepthBuffer[i * ScreenWidth() + j])
 					//{
 					//	Draw(j, i, tex->SampleGlyph(tex_u / tex_w, tex_v / tex_w), tex->SampleColour(tex_u / tex_w, tex_v / tex_w));
 					//	pDepthBuffer[i * ScreenWidth() + j] = tex_w;
 					//}
-
-					// temp
-					GameWindow->SetPixel(j, i, Texture->SampleColour(tex_u, tex_v));
-
+					GameWindow->SetPixel(j, i, Texture->SampleColour(tex_u / tex_w, tex_v / tex_w));
 					t += tstep;
 				}
 			}
 		}
 	}
-
+	
+	#pragma endregion
 };
 

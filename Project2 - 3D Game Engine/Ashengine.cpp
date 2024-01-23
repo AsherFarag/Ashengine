@@ -3,6 +3,7 @@
 #include <string>
 #include <list>
 
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -107,7 +108,7 @@ void Ashengine::OnCreate()
 		Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f})
 	};
 
-	CubeTexture = new Sprite(L"Resources/ore.jpg");
+	CubeTexture = new Sprite(L"Resources/Apple.jpg");
 }
 
 void Ashengine::OnUpdate(float a_DeltaTime)
@@ -162,7 +163,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 
 	Matrix4 MatRotX = MakeRotationXMatrix(Theta * 1.0f);
 	Matrix4 MatRotY = MakeRotationYMatrix(Theta * 0.5f);
-	Matrix4 MatRotZ = MakeRotationZMatrix(Theta * 0.f);
+	Matrix4 MatRotZ = MakeRotationZMatrix(Theta * 1.f);
 
 	Matrix4 TranslationMatrix = FMath::MakeTranslationMatrix(0, 10.f, 20.0f);
 
@@ -238,6 +239,20 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 				ProjectedTri.TextureCoord[0] = Clipped[n].TextureCoord[0];
 				ProjectedTri.TextureCoord[1] = Clipped[n].TextureCoord[1];
 				ProjectedTri.TextureCoord[2] = Clipped[n].TextureCoord[2];
+				
+				// Project Texture Co-ordinates
+				// U
+				ProjectedTri.TextureCoord[0].U = ProjectedTri.TextureCoord[0].U / ProjectedTri.TextureCoord[0].W;
+				ProjectedTri.TextureCoord[1].U = ProjectedTri.TextureCoord[1].U / ProjectedTri.TextureCoord[1].W;
+				ProjectedTri.TextureCoord[2].U = ProjectedTri.TextureCoord[2].U / ProjectedTri.TextureCoord[2].W;
+				// V
+				ProjectedTri.TextureCoord[0].V = ProjectedTri.TextureCoord[0].V / ProjectedTri.TextureCoord[0].W;
+				ProjectedTri.TextureCoord[1].V = ProjectedTri.TextureCoord[1].V / ProjectedTri.TextureCoord[1].W;
+				ProjectedTri.TextureCoord[2].V = ProjectedTri.TextureCoord[2].V / ProjectedTri.TextureCoord[2].W;
+				// W
+				ProjectedTri.TextureCoord[0].W = 1.0f / ProjectedTri.TextureCoord[0].W;
+				ProjectedTri.TextureCoord[1].W = 1.0f / ProjectedTri.TextureCoord[1].W;
+				ProjectedTri.TextureCoord[2].W = 1.0f / ProjectedTri.TextureCoord[2].W;
 
 				// Scale into View
 				ProjectedTri.Points[0] /= ProjectedTri.Points[0].W;
@@ -301,22 +316,14 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 				// Clip it against a plane. We only need to test each 
 				// subsequent plane, against subsequent new triangles
 				// as all triangles after a plane clip are guaranteed
-				// to lie on the inside of the plane. I like how this
-				// comment is almost completely and utterly justified
+				// to lie on the inside of the plane.
+
 				switch (p)
 				{
-				case 0:	
-					TrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
-					break;
-				case 1:	
-					TrisToAdd = ClipAgainstPlane({ 0.0f, (float)WindowHeight - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
-					break;
-				case 2:	
-					TrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
-					break;
-				case 3:	
-					TrisToAdd = ClipAgainstPlane({ (float)WindowWidth - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, Test, Clipped[0], Clipped[1]);
-					break;
+				case 0:	TrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, Test, Clipped[0], Clipped[1]); break;
+				case 1:	TrisToAdd = ClipAgainstPlane({ 0.0f, (float)WindowHeight - 1, 0.0f }, { 0.0f, -1.0f, 0.0f }, Test, Clipped[0], Clipped[1]); break;
+				case 2:	TrisToAdd = ClipAgainstPlane({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, Test, Clipped[0], Clipped[1]); break;
+				case 3:	TrisToAdd = ClipAgainstPlane({ (float)WindowWidth - 1, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, Test, Clipped[0], Clipped[1]); break;
 				}
 
 				for (int w = 0; w < TrisToAdd; w++)
@@ -336,9 +343,10 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			//	TriToDraw.m_Colour);
 
 			TexturedTriangle(
-				TriToDraw.Points[0].X, TriToDraw.Points[0].Y, TriToDraw.TextureCoord[0].X, TriToDraw.TextureCoord[0].Y,
-				TriToDraw.Points[1].X, TriToDraw.Points[1].Y, TriToDraw.TextureCoord[1].X, TriToDraw.TextureCoord[1].Y,
-				TriToDraw.Points[2].X, TriToDraw.Points[2].Y, TriToDraw.TextureCoord[2].X, TriToDraw.TextureCoord[2].Y, CubeTexture);
+				TriToDraw.Points[0], TriToDraw.TextureCoord[0],
+				TriToDraw.Points[1], TriToDraw.TextureCoord[1],
+				TriToDraw.Points[2], TriToDraw.TextureCoord[2],
+				CubeTexture);
 
 
 
@@ -346,7 +354,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			//	TriToDraw.Points[0].X, TriToDraw.Points[0].Y,
 			//	TriToDraw.Points[1].X, TriToDraw.Points[1].Y,
 			//	TriToDraw.Points[2].X, TriToDraw.Points[2].Y,
-			//	Colour::WHITE);
+			//	Colour::GREEN);
 		}
 	}
 
