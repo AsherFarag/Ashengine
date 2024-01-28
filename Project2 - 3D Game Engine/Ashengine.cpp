@@ -163,20 +163,25 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 
 	Matrix4 MatRotX = MakeRotationXMatrix(Theta * 1.0f);
 	Matrix4 MatRotY = MakeRotationYMatrix(Theta * 0.5f);
-	Matrix4 MatRotZ = MakeRotationZMatrix(Theta * 1.f);
+	Matrix4 MatRotZ = MakeRotationZMatrix(Theta * 1.0f);
 
 	Matrix4 TranslationMatrix = FMath::MakeTranslationMatrix(0, 10.f, 20.0f);
 
 	Matrix4 WorldMatrix;
 	WorldMatrix = Matrix4(); // Identity
-	WorldMatrix = MatRotZ * MatRotY; // Rotation
+	WorldMatrix = MatRotZ * MatRotX; // Rotation
 	WorldMatrix = WorldMatrix * TranslationMatrix; // Translation
 
 	Matrix4 ViewMatrix = QuickInverseMatrix(CameraMatrix);
 
 	std::vector<Triangle> TrianglesToRaster;
 
-	// Draw Triangles
+	// Generate a function that draws triangles from the mesh
+
+
+
+
+
 	for (auto& Tri : Cube.Tris)
 	{
 		Triangle ProjectedTri, TransformedTri, ViewedTri;
@@ -206,7 +211,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 		if (Normal.DotProduct(CameraRay) < 0.0f)
 		{
 			// Illumination
-			Vector3 LightDirection = { 0.0f, 5.0f, -12.5f };
+			Vector3 LightDirection = { 0.0f, 1.0f, -1.0f };
 			LightDirection.Normalize();
 
 			float DotProduct = /*LightDirection.DotProduct(Normal);*/ (CameraRay.Normal() * -1).DotProduct(Normal);
@@ -223,6 +228,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			ViewedTri.TextureCoord[0] = TransformedTri.TextureCoord[0];
 			ViewedTri.TextureCoord[1] = TransformedTri.TextureCoord[1];
 			ViewedTri.TextureCoord[2] = TransformedTri.TextureCoord[2];
+			ViewedTri.m_Colour = TransformedTri.m_Colour;
 
 			// Clip Viewed Triangles against Near Plane
 			int ClippedTris = 0;
@@ -239,20 +245,21 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 				ProjectedTri.TextureCoord[0] = Clipped[n].TextureCoord[0];
 				ProjectedTri.TextureCoord[1] = Clipped[n].TextureCoord[1];
 				ProjectedTri.TextureCoord[2] = Clipped[n].TextureCoord[2];
+				ProjectedTri.m_Colour = Clipped->m_Colour;
 				
 				// Project Texture Co-ordinates
 				// U
-				ProjectedTri.TextureCoord[0].U = ProjectedTri.TextureCoord[0].U / ProjectedTri.TextureCoord[0].W;
-				ProjectedTri.TextureCoord[1].U = ProjectedTri.TextureCoord[1].U / ProjectedTri.TextureCoord[1].W;
-				ProjectedTri.TextureCoord[2].U = ProjectedTri.TextureCoord[2].U / ProjectedTri.TextureCoord[2].W;
+				ProjectedTri.TextureCoord[0].U = ProjectedTri.TextureCoord[0].U / ProjectedTri.Points[0].W;
+				ProjectedTri.TextureCoord[1].U = ProjectedTri.TextureCoord[1].U / ProjectedTri.Points[1].W;
+				ProjectedTri.TextureCoord[2].U = ProjectedTri.TextureCoord[2].U / ProjectedTri.Points[2].W;
 				// V
-				ProjectedTri.TextureCoord[0].V = ProjectedTri.TextureCoord[0].V / ProjectedTri.TextureCoord[0].W;
-				ProjectedTri.TextureCoord[1].V = ProjectedTri.TextureCoord[1].V / ProjectedTri.TextureCoord[1].W;
-				ProjectedTri.TextureCoord[2].V = ProjectedTri.TextureCoord[2].V / ProjectedTri.TextureCoord[2].W;
+				ProjectedTri.TextureCoord[0].V = ProjectedTri.TextureCoord[0].V / ProjectedTri.Points[0].W;
+				ProjectedTri.TextureCoord[1].V = ProjectedTri.TextureCoord[1].V / ProjectedTri.Points[1].W;
+				ProjectedTri.TextureCoord[2].V = ProjectedTri.TextureCoord[2].V / ProjectedTri.Points[2].W;
 				// W
-				ProjectedTri.TextureCoord[0].W = 1.0f / ProjectedTri.TextureCoord[0].W;
-				ProjectedTri.TextureCoord[1].W = 1.0f / ProjectedTri.TextureCoord[1].W;
-				ProjectedTri.TextureCoord[2].W = 1.0f / ProjectedTri.TextureCoord[2].W;
+				ProjectedTri.TextureCoord[0].W = 1.0f / ProjectedTri.Points[0].W;
+				ProjectedTri.TextureCoord[1].W = 1.0f / ProjectedTri.Points[1].W;
+				ProjectedTri.TextureCoord[2].W = 1.0f / ProjectedTri.Points[2].W;
 
 				// Scale into View
 				ProjectedTri.Points[0] /= ProjectedTri.Points[0].W;
@@ -347,7 +354,6 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 				TriToDraw.Points[1], TriToDraw.TextureCoord[1],
 				TriToDraw.Points[2], TriToDraw.TextureCoord[2],
 				CubeTexture);
-
 
 
 			//GameWindow->DrawTriangle(
