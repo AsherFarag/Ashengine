@@ -40,7 +40,15 @@ struct Triangle
 		Points[2] = P3;
 		m_Colour = a_Colour;
 	}
-
+	Triangle(Vector3 P1, Vector3 P2, Vector3 P3, Vector2 T1, Vector2 T2, Vector2 T3)
+	{
+		Points[0] = P1;
+		Points[1] = P2;
+		Points[2] = P3;
+		TextureCoord[0] = T1;
+		TextureCoord[1] = T2;
+		TextureCoord[2] = T3;
+	}
 	Triangle(Vector3 P1, Vector3 P2, Vector3 P3, Vector2 T1, Vector2 T2, Vector2 T3, Colour a_Colour)
 	{
 		Points[0] = P1;
@@ -62,6 +70,8 @@ struct Mesh
 	std::vector<Triangle> Tris;
 
 	bool LoadFromObjectFile(std::string a_FileName);
+
+	bool HasTexture = true;
 };
 
 struct Sprite
@@ -377,12 +387,12 @@ public:
 			OutTri1.Points[1] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[0], *OutsidePoints[0], T);
 			OutTri1.TextureCoord[1].U = T * (TextureOutsidePoints[0]->U - TextureInsidePoints[0]->U) + TextureInsidePoints[0]->U;
 			OutTri1.TextureCoord[1].V = T * (TextureOutsidePoints[0]->V - TextureInsidePoints[0]->V) + TextureInsidePoints[0]->V;
-			//OutTri1.TextureCoord[1].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
+			OutTri1.TextureCoord[1].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
 
 			OutTri1.Points[2] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[0], *OutsidePoints[1], T);
 			OutTri1.TextureCoord[2].U = T * (TextureOutsidePoints[1]->U - TextureInsidePoints[0]->U) + TextureInsidePoints[0]->U;
 			OutTri1.TextureCoord[2].V = T * (TextureOutsidePoints[1]->V - TextureInsidePoints[0]->V) + TextureInsidePoints[0]->V;
-			//OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[1]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
+			OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[1]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
 
 			return 1;
 		}
@@ -409,7 +419,7 @@ public:
 			OutTri1.Points[2] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[0], *OutsidePoints[0], T);
 			OutTri1.TextureCoord[2].U = T * (TextureOutsidePoints[0]->U - TextureInsidePoints[0]->U) + TextureInsidePoints[0]->U;
 			OutTri1.TextureCoord[2].V = T * (TextureOutsidePoints[0]->V - TextureInsidePoints[0]->V) + TextureInsidePoints[0]->V;
-			//OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
+			OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
 
 			// The second triangle is composed of one of he inside points, a
 			// new point determined by the intersection of the other side of the 
@@ -423,7 +433,7 @@ public:
 			OutTri2.Points[2] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[1], *OutsidePoints[0], T);
 			OutTri2.TextureCoord[2].U = T * (TextureOutsidePoints[0]->U - TextureInsidePoints[1]->U) + TextureInsidePoints[1]->U;
 			OutTri2.TextureCoord[2].V = T * (TextureOutsidePoints[0]->V - TextureInsidePoints[1]->V) + TextureInsidePoints[1]->V;
-			//OutTri2.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[1]->W) + TextureInsidePoints[1]->W;
+			OutTri2.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[1]->W) + TextureInsidePoints[1]->W;
 
 			return 2; // Return two newly formed triangles which form a quad
 		}

@@ -91,24 +91,24 @@ void Ashengine::OnCreate()
 
 	ProjectionMatrix = FMath::MakeProjectionMatrix(Fov, AspectRatio, Near, Far);
 
-	//Cube.LoadFromObjectFile("Resources/teapot.obj");
-	Cube.Tris = {
-		// SOUTH
-		Triangle ( Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 0.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
-		Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f})
-	};
+	Cube.LoadFromObjectFile("Resources/12221_Cat_v1_l3.obj");
+	//Cube.Tris = {
+	//	// SOUTH
+	//	Triangle ( Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {1.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 0.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {0.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {0.0f, 1.0f, 0.0f, 1.0f},    Vector3 {1.0f, 1.0f, 1.0f, 1.0f},    Vector3 {1.0f, 1.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {0.0f, 1.0f},    Vector2 {1.0f, 1.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f}),
+	//	Triangle ( Vector3 {1.0f, 0.0f, 1.0f, 1.0f},    Vector3 {0.0f, 0.0f, 0.0f, 1.0f},    Vector3 {1.0f, 0.0f, 0.0f, 1.0f},	Vector2 {0.0f, 0.0f},    Vector2 {1.0f, 1.0f},    Vector2 {1.0f, 0.0f},	Colour {0.0f, 1.0f, 1.0f, 1.0f})
+	//};
 
-	CubeTexture = new Sprite(L"Resources/Apple.jpg");
+	//CubeTexture = new Sprite(L"Resources/Cat_diffuse.jpg");
 }
 
 void Ashengine::OnUpdate(float a_DeltaTime)
@@ -117,7 +117,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	float CameraSpeed = 1.0f;
 
 	if (Input::IsKeyDown(KeyCode::LeftShift))
-		CameraSpeed = 5.0f;
+		CameraSpeed = 0.25f;
 
 	if (Input::IsKeyDown(KeyCode::Up))
 		Camera.Y += CameraSpeed * 10.0f * a_DeltaTime;
@@ -158,9 +158,9 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	GameWindow->SetBuffer(Colour::BLUE);
 	
 	// Rotate Mesh
-	Theta += 0.0f * a_DeltaTime;
+	Theta += 1.0f * a_DeltaTime;
 
-	Matrix4 MatRotX = MakeRotationXMatrix(Theta * 1.0f);
+	Matrix4 MatRotX = MakeRotationXMatrix(Theta * 0.5f);
 	Matrix4 MatRotY = MakeRotationYMatrix(Theta * 0.5f);
 	Matrix4 MatRotZ = MakeRotationZMatrix(Theta * 1.0f);
 
@@ -374,36 +374,116 @@ void Ashengine::OnDestroy()
 
 bool Mesh::LoadFromObjectFile(std::string a_FileName)
 {
-	std::ifstream File(a_FileName);
-	if (!File.is_open())
+	//std::ifstream File(a_FileName);
+	//if (!File.is_open())
+	//	return false;
+
+	//// Local Cache of Verticies
+	//std::vector<Vector3> Verticies;
+
+	//while (!File.eof())
+	//{
+	//	char Line[128];
+	//	File.getline(Line, 128);
+
+	//	std::strstream Stream;
+	//	Stream << Line;
+
+	//	char JunkChar;
+
+	//	// Vertex Reading
+	//	if (Line[0] == 'v' && Line[1] == ' ')
+	//	{
+	//		Vector3 Vertex;
+	//		Stream >> JunkChar >> Vertex.X >> Vertex.Y >> Vertex.Z;
+	//		Verticies.push_back(Vertex);
+	//	}
+
+	//	if (Line[0] == 'f' && Line[1] == ' ')
+	//	{
+	//		int Face[3];
+	//		Stream >> JunkChar >> Face[0] >> Face[1] >> Face[2];
+	//		Tris.push_back({ Verticies[Face[0] - 1], Verticies[Face[1] - 1], Verticies[Face[2] - 1] });
+	//	}
+	//}
+	//return true;
+	ifstream f(a_FileName);
+	if (!f.is_open())
 		return false;
 
-	// Local Cache of Verticies
-	std::vector<Vector3> Verticies;
+	// Local cache of verts
+	vector<Vector3> verts;
+	vector<Vector2> texs;
 
-	while (!File.eof())
+	while (!f.eof())
 	{
-		char Line[128];
-		File.getline(Line, 128);
+		char line[128];
+		f.getline(line, 128);
 
-		std::strstream Stream;
-		Stream << Line;
+		strstream s;
+		s << line;
 
-		char JunkChar;
+		char junk;
 
-		// Vertex Reading
-		if (Line[0] == 'v' && Line[1] == ' ')
+		if (line[0] == 'v')
 		{
-			Vector3 Vertex;
-			Stream >> JunkChar >> Vertex.X >> Vertex.Y >> Vertex.Z;
-			Verticies.push_back(Vertex);
+			if (line[1] == 't')
+			{
+				Vector2 v;
+				s >> junk >> junk >> v.U >> v.V;
+				// A little hack for the spyro texture
+				//v.u = 1.0f - v.u;
+				//v.v = 1.0f - v.v;
+				texs.push_back(v);
+			}
+			else
+			{
+				Vector3 v;
+				s >> junk >> v.X >> v.Y >> v.Z;
+				verts.push_back(v);
+			}
 		}
 
-		if (Line[0] == 'f' && Line[1] == ' ')
+			
+
+		if (line[0] == 'f')
 		{
-			int Face[3];
-			Stream >> JunkChar >> Face[0] >> Face[1] >> Face[2];
-			Tris.push_back({ Verticies[Face[0] - 1], Verticies[Face[1] - 1], Verticies[Face[2] - 1] });
+			if (!HasTexture)
+			{
+				int f[3];
+				s >> junk >> f[0] >> f[1] >> f[2];
+				Tris.push_back({ verts[f[0] - 1], verts[f[1] - 1], verts[f[2] - 1] });
+			}
+			else
+			{
+				s >> junk;
+
+				string tokens[6];
+				int nTokenCount = -1;
+
+
+				while (!s.eof())
+				{
+					char c = s.get();
+					if (c == ' ' || c == '/')
+						nTokenCount++;
+					else
+						tokens[nTokenCount].append(1, c);
+				}
+
+				tokens[nTokenCount].pop_back();
+
+
+				Tris.push_back(Triangle{
+					verts[stoi(tokens[0]) - 1],
+					verts[stoi(tokens[2]) - 1],
+					verts[stoi(tokens[4]) - 1],
+					texs[stoi(tokens[1]) - 1],
+					texs[stoi(tokens[3]) - 1],
+					texs[stoi(tokens[5]) - 1]
+					});
+			}
+
 		}
 	}
 	return true;
