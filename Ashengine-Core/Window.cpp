@@ -130,7 +130,6 @@ void Window::DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Colour
 
 void Window::DrawFillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Colour a_Colour)
 {
-	auto SWAP = [](int& x, int& y) { int t = x; x = y; y = t; };
 	auto drawline = [&](int sx, int ex, int ny)
 	{ 
 		for (int i = sx; i <= ex; i++)
@@ -145,25 +144,35 @@ void Window::DrawFillTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Co
 	int signx1, signx2, dx1, dy1, dx2, dy2;
 	int e1, e2;
 	// Sort vertices
-	if (y1 > y2) { SWAP(y1, y2); SWAP(x1, x2); }
-	if (y1 > y3) { SWAP(y1, y3); SWAP(x1, x3); }
-	if (y2 > y3) { SWAP(y2, y3); SWAP(x2, x3); }
+	if (y1 > y2) { std::swap(y1, y2); std::swap(x1, x2); }
+	if (y1 > y3) { std::swap(y1, y3); std::swap(x1, x3); }
+	if (y2 > y3) { std::swap(y2, y3); std::swap(x2, x3); }
 
 	t1x = t2x = x1; y = y1;   // Starting points
-	dx1 = (int)(x2 - x1); if (dx1 < 0) { dx1 = -dx1; signx1 = -1; }
-	else signx1 = 1;
+	dx1 = (int)(x2 - x1);
+	if (dx1 < 0)
+	{
+		dx1 = -dx1; signx1 = -1;
+	}
+	else
+		signx1 = 1;
 	dy1 = (int)(y2 - y1);
 
-	dx2 = (int)(x3 - x1); if (dx2 < 0) { dx2 = -dx2; signx2 = -1; }
-	else signx2 = 1;
+	dx2 = (int)(x3 - x1);
+	if (dx2 < 0)
+	{
+		dx2 = -dx2; signx2 = -1;
+	}
+	else
+		signx2 = 1;
 	dy2 = (int)(y3 - y1);
 
-	if (dy1 > dx1) {   // swap values
-		SWAP(dx1, dy1);
+	if (dy1 > dx1) {   // std::swap values
+		std::swap(dx1, dy1);
 		changed1 = true;
 	}
-	if (dy2 > dx2) {   // swap values
-		SWAP(dy2, dx2);
+	if (dy2 > dx2) {   // std::swap values
+		std::swap(dy2, dx2);
 		changed2 = true;
 	}
 
@@ -221,8 +230,8 @@ next:
 	dy1 = (int)(y3 - y2);
 	t1x = x2;
 
-	if (dy1 > dx1) {   // swap values
-		SWAP(dy1, dx1);
+	if (dy1 > dx1) {   // std::swap values
+		std::swap(dy1, dx1);
 		changed1 = true;
 	}
 	else changed1 = false;

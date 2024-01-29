@@ -14,11 +14,23 @@ void Application::Start()
 	// Store somewhere the deltatime of each frame for use when updating things.
 	double DeltaTime = TargetDeltaTime;
 
-	SetTargetFPS(60);
+	SetTargetFPS(120);
+
+	float FPSInterval = 0.f;
 
 	// Run a game loop.
 	while ( !ShouldExit )
 	{
+		Frames++;
+		FPSInterval += DeltaTime;
+		if (FPSInterval >= 1.f)
+		{
+			FPS = Frames;
+			Frames = 0u;
+			FPSInterval -= 1.f;
+		}
+
+
 		// Tick things that need to happen each frame, like input.
 		Input::Tick();
 

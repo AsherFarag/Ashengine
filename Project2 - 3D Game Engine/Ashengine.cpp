@@ -151,7 +151,6 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 		Camera -= Right * (CameraSpeed * 5.0f * a_DeltaTime);
 
 	// Fps Counter
-	float FPS = 1.f / a_DeltaTime;
 	std::string FPSTitle = WindowTitle + std::string(" FPS: ") + std::to_string(FPS);
 	GameWindow->SetTitle(FPSTitle.c_str());
 
@@ -349,7 +348,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			//	TriToDraw.Points[2].X, TriToDraw.Points[2].Y,
 			//	TriToDraw.m_Colour);
 
-			TexturedTriangle(
+			DrawTexturedTriangle(
 				TriToDraw.Points[0], TriToDraw.TextureCoord[0],
 				TriToDraw.Points[1], TriToDraw.TextureCoord[1],
 				TriToDraw.Points[2], TriToDraw.TextureCoord[2],

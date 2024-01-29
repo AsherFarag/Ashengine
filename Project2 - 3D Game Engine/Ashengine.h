@@ -124,10 +124,10 @@ public:
 		//return m_Colours[(sy % m_Height) * m_Width + (sx % m_Width)];
 
 		// Flip texture on both X and Y axis 
-		sx -= m_Width - 1;
-		sx *= -1;
-		sy -= m_Height - 1;
-		sy *= -1;
+		//sx -= m_Width - 1;
+		//sx *= -1;
+		//sy -= m_Height - 1;
+		//sy *= -1;
 
 		if (sx < 0 || sx > m_Width || sy < 0 || sy > m_Height)
 			return Colour::BLACK;
@@ -377,12 +377,12 @@ public:
 			OutTri1.Points[1] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[0], *OutsidePoints[0], T);
 			OutTri1.TextureCoord[1].U = T * (TextureOutsidePoints[0]->U - TextureInsidePoints[0]->U) + TextureInsidePoints[0]->U;
 			OutTri1.TextureCoord[1].V = T * (TextureOutsidePoints[0]->V - TextureInsidePoints[0]->V) + TextureInsidePoints[0]->V;
-			OutTri1.TextureCoord[1].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
+			//OutTri1.TextureCoord[1].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
 
 			OutTri1.Points[2] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[0], *OutsidePoints[1], T);
 			OutTri1.TextureCoord[2].U = T * (TextureOutsidePoints[1]->U - TextureInsidePoints[0]->U) + TextureInsidePoints[0]->U;
 			OutTri1.TextureCoord[2].V = T * (TextureOutsidePoints[1]->V - TextureInsidePoints[0]->V) + TextureInsidePoints[0]->V;
-			OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[1]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
+			//OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[1]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
 
 			return 1;
 		}
@@ -409,7 +409,7 @@ public:
 			OutTri1.Points[2] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[0], *OutsidePoints[0], T);
 			OutTri1.TextureCoord[2].U = T * (TextureOutsidePoints[0]->U - TextureInsidePoints[0]->U) + TextureInsidePoints[0]->U;
 			OutTri1.TextureCoord[2].V = T * (TextureOutsidePoints[0]->V - TextureInsidePoints[0]->V) + TextureInsidePoints[0]->V;
-			OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
+			//OutTri1.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[0]->W) + TextureInsidePoints[0]->W;
 
 			// The second triangle is composed of one of he inside points, a
 			// new point determined by the intersection of the other side of the 
@@ -423,14 +423,14 @@ public:
 			OutTri2.Points[2] = IntersectPlane(a_PlanePosition, a_PlaneNormal, *InsidePoints[1], *OutsidePoints[0], T);
 			OutTri2.TextureCoord[2].U = T * (TextureOutsidePoints[0]->U - TextureInsidePoints[1]->U) + TextureInsidePoints[1]->U;
 			OutTri2.TextureCoord[2].V = T * (TextureOutsidePoints[0]->V - TextureInsidePoints[1]->V) + TextureInsidePoints[1]->V;
-			OutTri2.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[1]->W) + TextureInsidePoints[1]->W;
+			//OutTri2.TextureCoord[2].W = T * (TextureOutsidePoints[0]->W - TextureInsidePoints[1]->W) + TextureInsidePoints[1]->W;
 
 			return 2; // Return two newly formed triangles which form a quad
 		}
 
 	}
 
-	void TexturedTriangle(
+	void DrawTexturedTriangle(
 		Vector3 p1, Vector2 t1,
 		Vector3 p2, Vector2 t2,
 		Vector3 p3, Vector2 t3,
@@ -438,29 +438,20 @@ public:
 	{
 		if (p2.Y < p1.Y)
 		{
-			swap(p1.Y, p2.Y);
-			swap(p1.X, p2.X);
-			swap(t1.U, t2.U);
-			swap(t1.V, t2.V);
-			swap(t1.W, t2.W);
+			swap(p1, p2);
+			swap(t1, t2);
 		}
 
 		if (p3.Y < p1.Y)
 		{
-			swap(p1.Y, p3.Y);
-			swap(p1.X, p3.X);
-			swap(t1.U, t3.U);
-			swap(t1.V, t3.V);
-			swap(t1.W, t3.W);
+			swap(p1, p3);
+			swap(t1, t3);
 		}
 
 		if (p3.Y < p2.Y)
 		{
-			swap(p2.Y, p3.Y);
-			swap(p2.X, p3.X);
-			swap(t2.U, t3.U);
-			swap(t2.V, t3.V);
-			swap(t2.W, t3.W);
+			swap(p2, p3);
+			swap(t2, t3);
 		}
 
 		int dy1 = p2.Y - p1.Y;
@@ -484,20 +475,27 @@ public:
 
 	#pragma region Top Half of the Tri
 
-		if (dy1) dax_step = dx1 / (float)abs(dy1);
-		if (dy2) dbx_step = dx2 / (float)abs(dy2);
+		if (dy1)
+		{
+			dax_step = dx1 / (float)abs(dy1);
 
-		if (dy1) du1_step = du1 / (float)abs(dy1);
-		if (dy1) dv1_step = dv1 / (float)abs(dy1);
-		if (dy1) dw1_step = dw1 / (float)abs(dy1);
+			du1_step = du1 / (float)abs(dy1);
+			dv1_step = dv1 / (float)abs(dy1);
+			dw1_step = dw1 / (float)abs(dy1);
+		}
 
-		if (dy2) du2_step = du2 / (float)abs(dy2);
-		if (dy2) dv2_step = dv2 / (float)abs(dy2);
-		if (dy2) dw2_step = dw2 / (float)abs(dy2);
+		if (dy2)
+		{
+			dbx_step = dx2 / (float)abs(dy2);
+
+			du2_step = du2 / (float)abs(dy2);
+			dv2_step = dv2 / (float)abs(dy2);
+			dw2_step = dw2 / (float)abs(dy2);
+		}
 
 		if (dy1)
 		{
-			for (int i = p1.Y; i <= p2.Y; ++i)
+			for (float i = p1.Y; i <= p2.Y; ++i)
 			{
 				int ax = p1.X + (float)(i - p1.Y) * dax_step;
 				int bx = p1.X + (float)(i - p1.Y) * dbx_step;
@@ -553,17 +551,24 @@ public:
 		du1 = t3.U - t2.U;
 		dw1 = t3.W - t2.W;
 
-		if (dy1) dax_step = dx1 / (float)abs(dy1);
-		if (dy2) dbx_step = dx2 / (float)abs(dy2);
-
 		du1_step = 0, dv1_step = 0;
-		if (dy1) du1_step = du1 / (float)abs(dy1);
-		if (dy1) dv1_step = dv1 / (float)abs(dy1);
-		if (dy1) dw1_step = dw1 / (float)abs(dy1);
+		if (dy1)
+		{
+			dax_step = dx1 / (float)abs(dy1);
+
+			du1_step = du1 / (float)abs(dy1);
+			dv1_step = dv1 / (float)abs(dy1);
+			dw1_step = dw1 / (float)abs(dy1);
+		}
+
+		if (dy2)
+		{
+			dbx_step = dx2 / (float)abs(dy2);
+		}
 
 		if (dy1)
 		{
-			for (int i = p2.Y; i <= p3.Y; i++)
+			for (float i = p2.Y; i <= p3.Y; i++)
 			{
 				int ax = p2.X + (float)(i - p2.Y) * dax_step;
 				int bx = p1.X + (float)(i - p1.Y) * dbx_step;
