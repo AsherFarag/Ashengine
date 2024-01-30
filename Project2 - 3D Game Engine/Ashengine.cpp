@@ -158,7 +158,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	GameWindow->SetBuffer(Colour::BLUE);
 	
 	// Rotate Mesh
-	Theta += 0.0f * a_DeltaTime;
+	Theta += 1.0f * a_DeltaTime;
 
 	Matrix4 MatRotX = MakeRotationXMatrix(Theta * 1.0f);
 	Matrix4 MatRotY = MakeRotationYMatrix(Theta * 0.5f);
@@ -174,12 +174,6 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 	Matrix4 ViewMatrix = QuickInverseMatrix(CameraMatrix);
 
 	std::vector<Triangle> TrianglesToRaster;
-
-	// Generate a function that draws triangles from the mesh
-
-
-
-
 
 	for (auto& Tri : Cube.Tris)
 	{
@@ -215,7 +209,11 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 
 			float DotProduct = /*LightDirection.DotProduct(Normal);*/ (CameraRay.Normal() * -1).DotProduct(Normal);
 			DotProduct = max(DotProduct, 0.0f);
+
+			// Gray Scale Lighting
 			//ProjectedTri.m_Colour = Colour(DotProduct, DotProduct, DotProduct, 1.0f);
+			
+			// Coloured Rim Lighting
 			ProjectedTri.m_Colour = Colour(DotProduct, DotProduct * 0.5f, DotProduct * 0.5f + pow(1.0f - DotProduct, 2.0f) * 1.2f, 0.1f);
 
 			
@@ -233,7 +231,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 			int ClippedTris = 0;
 			Triangle Clipped[2];
 			Vector3 PlanePosition = { 0.0f, 0.0f, 0.1f }; Vector3 PlaneNormal = { 0.0f, 0.0f, 1.0f };
-			ClippedTris = ClipAgainstPlane(PlanePosition, PlaneNormal,ViewedTri, Clipped[0], Clipped[1]);
+			ClippedTris = ClipAgainstPlane(PlanePosition, PlaneNormal, ViewedTri, Clipped[0], Clipped[1]);
 
 			for (int n = 0; n < ClippedTris; n++)
 			{
@@ -292,6 +290,7 @@ void Ashengine::OnUpdate(float a_DeltaTime)
 		}
 	}
 
+	// Sort by Tri Z-Depth
 	std::sort(TrianglesToRaster.begin(), TrianglesToRaster.end(), [](Triangle& T1, Triangle& T2)
 	{
 		float Z1 = (T1.Points[0].Z + T1.Points[1].Z + T1.Points[2].Z) / 3.0f;
